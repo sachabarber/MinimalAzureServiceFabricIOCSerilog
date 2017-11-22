@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Settings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+  <!-- Add your custom configuration sections and parameters here -->
+  <Section Name="appSettings">
+    <Parameter Name="simpleStatelessServiceFabricDemo:EnvironmentName" Value="" MustOverride="true" IsEncrypted="false"/>
+    <Parameter Name="simpleStatelessServiceFabricDemo:serilog:write-to:Seq.restrictedToMinimumLevel" Value="" MustOverride="true" IsEncrypted="false"/>
+    <Parameter Name="simpleStatelessServiceFabricDemo:serilog:write-to:Seq.serverUrl" Value="" MustOverride="true" IsEncrypted="false"/>
+    <Parameter Name="simpleStatelessServiceFabricDemo:UseServiceFabricEnhancements" Value="" MustOverride="true" IsEncrypted="false"/>
+  </Section>
+  <Section Name="encryptedSettings">
+    <Parameter Name="simpleStatelessServiceFabricDemo:SomeSafeKey" Value="" MustOverride="false" IsEncrypted="true"/>
+  </Section>
+</Settings>

@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Application xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Name="fabric:/SimpleStatelessServiceFabricDemo" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+  <Parameters>
+    <Parameter Name="Stateless1_InstanceCount" Value="-1" />
+    <Parameter Name="simpleStatelessServiceFabricDemo:EnvironmentName" Value="Cloud" />
+    <Parameter Name="simpleStatelessServiceFabricDemo:serilog:write-to:Seq.restrictedToMinimumLevel" Value="Information" />
+    <Parameter Name="simpleStatelessServiceFabricDemo:serilog:write-to:Seq.serverUrl" Value="http://localhost:5341" />
+    <Parameter Name="simpleStatelessServiceFabricDemo:UseServiceFabricEnhancements" Value="true" />
+    <Parameter Name="simpleStatelessServiceFabricDemo:SomeSafeKey" Value="fdfdfdd" />
+    <Parameter Name="simpleStatelessServiceFabricDemo:CertThumbPrint" Value="ad0665f13101c6258cbfae6e091c3f3155fe50d0" />
+  </Parameters>
+</Application>
