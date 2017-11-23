@@ -1,0 +1,71 @@
+﻿<div id="TOC"></div>
+<h1>Introduction</h1>
+<p>&nbsp;</p>
+<h1>What Is The Azure Service Fabric</h1>
+<p>&nbsp;</p>
+<h1>Where Is The Code?</h1>
+<p>I have the code in my Github repo :
+<a href="https://github.com/sachabarber/MinimalAzureServiceFabricIOCSerilog" target="_blank">
+https://github.com/sachabarber/MinimalAzureServiceFabricIOCSerilog</a></p>
+<p>&nbsp;</p>
+<h1>Prerequisites</h1>
+<p>You will need to have the following components installed to run the code 
+associated with this article</p>
+<ul>
+	<li>.NET 4.6.2 developer pack</li>
+	<li>Azure Service Fabric 2.6 (or above) SDK</li>
+	<li>Visual Studio 2017</li>
+</ul>
+<p>&nbsp;</p>
+<h1>What Is This Article Going To Show Me?</h1>
+<p>This article will hopefully give you a taster of what is possible with the 
+Azure Service Fabric, and will also show you how to perform common best 
+practices such as:</p>
+<ul>
+	<li>Dependency injection to facilitate better testing</li>
+	<li>Introduce better logging system then relying on the one you get from a 
+	new Azure Service Fabric template</li>
+	<li>Talk about the fabric as a whole</li>
+	<li>Show you how to protect sensitive information (such as connection 
+	strings, its a public cloud after all)</li>
+</ul>
+<p>&nbsp;</p>
+<h1>Lets Crack On</h1>
+<h2>Anatomy Of An Azure Service Fabric Offering</h2>
+<h3>Intentions</h3>
+<h3>Inter Service Comms</h3>
+<p>&nbsp;</p>
+<h2>Anatomy Of An Azure Service Fabric Offering</h2>
+<p>&nbsp;</p>
+<h2>Bringing IOC Into The Fold</h2>
+<p>&nbsp;</p>
+<h2>Some Better Logging : Serilog/Seq</h2>
+<p>&nbsp;</p>
+<h2>Getting To Know The New Config System</h2>
+<p>&nbsp;</p>
+<h2>Lets Keep Those Details Safe</h2>
+<h3>Creating A Self Sign Cert</h3>
+<h3>The Importance Of Powershell (current/latest versions)</h3>
+<h3>What About Real Life Cluster?</h3>
+<h3>Installing The Self Sign Cert</h3>
+<h3>Using The Self Sign Cert</h3>
+<p>&nbsp;</p>
+<h2>Depoyment/Publish Profiles</h2>
+<p>&nbsp;</p>
+<h2>The Cluster Manager</h2>
+<p>&nbsp;</p>
+<h1>Conclusion</h1>
+<p>We are using the Azure Service Fabric a fair bit, and it has not let us down 
+so far. We mainly use it for siloed micro services that don't interact with each 
+other that much, so we have not really needed to open any ports. However the 
+scaling aspect of it, and the fact that this can be done via C#
+<a href="https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-concepts-scalability">
+FabricClient</a> and
+<a href="https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-tutorial-scale-cluster">
+PowerShell</a> on demand should we need to scal further is very sweet</p>
+
+
+
+
+
+
