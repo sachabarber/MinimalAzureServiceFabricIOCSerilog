@@ -1,7 +1,111 @@
-﻿<div id="TOC"></div>
+﻿
+<head>
+<style type="text/css">
+.auto-style1 {
+	margin-left: 40px;
+}
+</style>
+</head>
+
+<div id="TOC"></div>
 <h1>Introduction</h1>
+<p>In this article we will walk through using the Azure "Service Fabric". to my 
+mind this is one of the most fascinating things in the Azure platform offerings.</p>
+<p>We will also see how to use best practices such as dependency injection and 
+proper logging, and how to keep sensitive data safe when deploying to what is 
+essentially a public cloud.&nbsp;</p>
 <p>&nbsp;</p>
 <h1>What Is The Azure Service Fabric</h1>
+<p>So before we get into the guts of what this article does and how it does it. 
+Just what is the "Service Fabric"?</p>
+<p>To quote the official docs (they always say things quite nicely, little point 
+in trying to rewite what is already a good explanation)</p>
+<p>&nbsp;</p>
+<h2>Overview Of Azure Service Fabric</h2>
+<p><em>Azure Service Fabric is a distributed systems platform that makes it easy to 
+package, deploy, and manage scalable and reliable microservices and containers. 
+Service Fabric also addresses the significant challenges in developing and 
+managing cloud native applications. Developers and administrators can avoid 
+complex infrastructure problems and focus on implementing mission-critical, 
+demanding workloads that are scalable, reliable, and manageable. Service Fabric 
+represents the next-generation platform for building and managing these 
+enterprise-class, tier-1, cloud-scale applications running in containers.</em></p>
+<p><em><br>This short video introduces Service Fabric and microservices:</em></p>
+<p><a href="https://channel9.msdn.com/Blogs/Azure/Azure-Service-Fabric" target="_blank">
+<em>
+<img alt="" height="597" src="overviewvid.png" width="1165"></em></a></p>
+<p class="auto-style1"><em></em></p>
+<h2>Applications Composed Of Microservices</h2>
+<p><em>ervice Fabric enables you to build and manage scalable and reliable 
+applications composed of microservices that run at high density on a shared pool 
+of machines, which is referred to as a cluster. It provides a sophisticated, 
+lightweight runtime to build distributed, scalable, stateless, and stateful 
+microservices running in containers. It also provides comprehensive application 
+management capabilities to provision, deploy, monitor, upgrade/patch, and delete 
+deployed applications including containerized services.</em></p>
+<p><em><br>Service Fabric powers many Microsoft services today, including Azure 
+SQL Database, Azure Cosmos DB, Cortana, Microsoft Power BI, Microsoft Intune, 
+Azure Event Hubs, Azure IoT Hub, Dynamics 365, Skype for Business, and many core 
+Azure services.</em></p>
+<p><em><br>Service Fabric is tailored to create cloud native services that can 
+start small, as needed, and grow to massive scale with hundreds or thousands of 
+machines.</em></p>
+<p><em><br>Today's Internet-scale services are built of microservices. Examples 
+of microservices include protocol gateways, user profiles, shopping carts, 
+inventory processing, queues, and caches. Service Fabric is a microservices 
+platform that gives every microservice (or container) a unique name that can be 
+either stateless or stateful.</em></p>
+<p><em><br>Service Fabric provides comprehensive runtime and lifecycle 
+management capabilities to applications that are composed of these 
+microservices. It hosts microservices inside containers that are deployed and 
+activated across the Service Fabric cluster. </em></p>
+<p><em>A move from virtual machines to containers makes possible an 
+order-of-magnitude increase in density. Similarly, another order of magnitude in 
+density becomes possible when you move from containers to microservices in these 
+containers. For example, a single cluster for Azure SQL Database comprises 
+hundreds of machines running tens of thousands of containers that host a total 
+of hundreds of thousands of databases. Each database is a Service Fabric 
+stateful microservice.<br>For more on the microservices approach, read Why a 
+microservices approach to building applications?</em></p>
+<p><em></em></p>
+<h2>Any OS, Any Cloud</h2>
+<p><em>Service Fabric runs everywhere. You can create clusters for Service 
+Fabric in many environments, including Azure or on premises, on Windows Server, 
+or on Linux. You can even create clusters on other public clouds. In addition, 
+the development environment in the SDK is identical to the production 
+environment, with no emulators involved. In other words, what runs on your local 
+development cluster deploys to the clusters in other environments.</em></p>
+<p>&nbsp;</p>
+<p>Taken from
+<a href="https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-overview">
+https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-overview</a> 
+up on date 27/11/17</p>
+<p>&nbsp;</p>
+<h2>My View</h2>
+<p>So the above is what the official Microsoft docs say, but what do I think?</p>
+<p>Well yes its does all of the above, but what drove me to look and use the 
+Service Fabric initially (A decision I have not regretted) is that is also 
+offers these features</p>
+<ul>
+	<li>There is a concept of a cluster which is made up of a number of nodes 
+	(you pick this at creation time). So there is no central point of failure. 
+	Typically the cluster is not an even number</li>
+	<li>Side by side statless/staeful/actors all running in same fabric cluster 
+	nodes (if you ever used the early Azure cloud services you will know this is 
+	a big win)</li>
+	<li>Self healing system, I would specify my intention via a config file, 
+	where I would say I want 3 instances of this, 5 of that, and the Service 
+	Fabric would take care of all of the provisions, maintenance to ensure that 
+	my requirements were met. </li>
+	<li>There is a nice web based dashboard that comes for free that shows the 
+	cluster/health/stats etc etc</li>
+	<li>Its fairly familiar apart from a few special methods it felt the same as 
+	creating something like a WebApi, or windows service. We will see more of 
+	this later.</li>
+	<li>I can scale the service us on demand via PowerShell and also via a 
+	simple .NET class that I wrote which uses the <code>FabricClient </code>.NET 
+	object to communicate with the cluster</li>
+</ul>
 <p>&nbsp;</p>
 <h1>Where Is The Code?</h1>
 <p>I have the code in my Github repo :
@@ -34,8 +138,15 @@ practices such as:</p>
 <h2>Anatomy Of An Azure Service Fabric Offering</h2>
 <h3>Intentions</h3>
 <h3>Inter Service Comms</h3>
+<h3>Importance Of Correct Configuration</h3>
+<p>To run the Service Fabric you MUST ensure that it runs with <strong>x64 as 
+the platform</strong>. An example is shown below for the code that accompanies 
+this article</p>
 <p>&nbsp;</p>
-<h2>Anatomy Of An Azure Service Fabric Offering</h2>
+<p><a href="configBig.png" target="_blank"><img alt="" height="444" src="configSmall.png" width="640"></a></p>
+<p><em>CLICK FOR BIGGER IMAGE</em></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>Bringing IOC Into The Fold</h2>
 <p>&nbsp;</p>
@@ -44,15 +155,99 @@ practices such as:</p>
 <h2>Getting To Know The New Config System</h2>
 <p>&nbsp;</p>
 <h2>Lets Keep Those Details Safe</h2>
-<h3>Creating A Self Sign Cert</h3>
+<h3>Creating A Self Sign Cert</h3>re 
 <h3>The Importance Of Powershell (current/latest versions)</h3>
 <h3>What About Real Life Cluster?</h3>
 <h3>Installing The Self Sign Cert</h3>
 <h3>Using The Self Sign Cert</h3>
 <p>&nbsp;</p>
 <h2>Depoyment/Publish Profiles</h2>
+<p>The Service Fabric builds apon previous Azure successes, and Publish profiles 
+are one such success. These are a simple idea, where we have a profile matched 
+with a deployment that specifies the requirments needed for THAT deployments via 
+some dedicated config.</p>
+<p>&nbsp;</p>
+<p>Here is an example of publish profile file</p>
+<pre lang="xml">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;PublishProfile xmlns="http://schemas.microsoft.com/2015/05/fabrictools"&gt;
+  &lt;ClusterConnectionParameters ConnectionEndpoint="XXXXXXXX.westus.cloudapp.azure.com:19000" /&gt;
+  &lt;ApplicationParameterFile Path="..\ApplicationParameters\Cloud.xml" /&gt;
+  &lt;CopyPackageParameters CompressPackage="true" /&gt;
+&lt;/PublishProfile&gt;
+</pre>
+<p>Where this just points to the relevant cluster endpoint, and specifies another file for the parameters to use</p>
+<p>Here is that extra parameters file</p>
+<pre lang="xml">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;Application xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             Name="fabric:/SimpleStatelessServiceFabricDemo" 
+             xmlns="http://schemas.microsoft.com/2011/01/fabric"&gt;
+  &lt;Parameters&gt;
+    &lt;Parameter Name="Stateless1_InstanceCount" Value="-1" /&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:EnvironmentName" 
+               Value="Cloud" /&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:serilog:write-to:Seq.restrictedToMinimumLevel" 
+               Value="Information" /&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:serilog:write-to:Seq.serverUrl" 
+               Value="http://localhost:5341" /&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:UseServiceFabricEnhancements" 
+               Value="true" /&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:SomeSafeKey" 
+               Value="fdfdfdd" /&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:CertThumbPrint" 
+               Value="ad0665f13101c6258cbfae6e091c3f3155fe50d0" /&gt;
+  &lt;/Parameters&gt;
+&lt;/Application&gt;
+</pre>
+<p>&nbsp;</p>
+<p>So we would normally have <strong>1 x Publish Profile file, </strong>and<strong> 
+1 x Parameter file per environment</strong> that we wish to release to. The standard template that comes 
+with Visual Studio for building Azure Service Fabric apps will allow you to 
+specify which publish profile to release when you want to publish.</p>
+<p>&nbsp;</p>
+<div style="border:1px solid black; background:yellow">
+<p style="margin:5px"><strong>NOTE : </strong></p>
+	<p style="margin:5px">&nbsp;</p>
+	<p style="margin:5px">You must perform a "Package" step first before you 
+	"Publish", this 
+creates the correct structure to release. This is avaiable via a right click in 
+the main project (the one with the "ApplicationManifest.xml in it)</p>
+</div>
+<p><img alt="" height="369" src="package.png" width="640"></p>
+<p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>The Cluster Manager</h2>
+<p>As I stated in the introductory section of this article the Azure Service 
+Fabric comes with a rather nice cluster manager (which I have to say looks like 
+it stole a lot of inspiration from the DataStax Cassandra cluster manager). This 
+cluster manager is accessible from the portal or via the system tray icon if you 
+are running the cluster locally from Visual Studio.</p>
+<p>&nbsp;</p>
+<p>From the cluster manager you can do these sort of things</p>
+<ul>
+	<li>Delete an app</li>
+	<li>Unprovision a type</li>
+	<li>Start a node </li>
+	<li>Stop a node (useful for testing failure code)</li>
+	<li>See what artifacts are deployed</li>
+	<li>Examine the configution that was used for a particular deployment</li>
+</ul>
+<p>&nbsp;</p>
+<p>As I say if running locally you can acess this from the system tray icon, 
+otherwise just grab the url from the Azure portal</p>
+<p><img alt="" height="238" src="systray.png" width="640"></p>
+<p>&nbsp;</p>
+<p>Right click that icon, and choose "Manage local cluster" to see the Fabric 
+explorer. This is available at a url of this form (get the correct url from your own 
+setup or the Azure portal)&nbsp;</p>
+<p>&nbsp;</p>
+<p>http://<strong>[YOUR HOST HERE]</strong>:19080/Explorer/Index.htm</p>
+<p>&nbsp;</p>
+<p><a href="clusterManagerSmall.png" target="_blank"><img alt="" height="360" src="clusterManagerSmall.png" width="640"></a></p>
+<p>&nbsp;</p>
+<p><em>CLICK FOR BIGGER IMAGE</em></p>
 <p>&nbsp;</p>
 <h1>Conclusion</h1>
 <p>We are using the Azure Service Fabric a fair bit, and it has not let us down 
