@@ -4,6 +4,9 @@
 .auto-style1 {
 	margin-left: 40px;
 }
+.auto-style2 {
+	background-color: #FFFF00;
+}
 </style>
 </head>
 
@@ -136,8 +139,279 @@ practices such as:</p>
 <p>&nbsp;</p>
 <h1>Lets Crack On</h1>
 <h2>Anatomy Of An Azure Service Fabric Offering</h2>
+<p>So we have talked a bit about the Service Fabric. But what sort of things can 
+we run on the Service Fabric?</p>
+<p>This is actually quite varied. For example this is what we see when we create 
+a new Service Fabric app in Visual Studio.</p>
+<p><a href="sfTYpesBig.png"><img alt="" height="435" src="sfTYpesSmall.png" width="630"></a></p>
+<p><em>CLICK FOR BIGGER IMAGE</em></p>
+<p>Whilst I will not be going into all these different type of services, I will 
+give a 1 line strap lines for each of them</p>
+<ul>
+	<li><strong>Stateless service :</strong> Is a service that does not need to 
+	maintain any state, so this could be a per request type of thing, or 
+	something that will create a new processing pipeline per message or 
+	something like that</li>
+	<li><strong>Stateful service :</strong> Is a service where we need to store 
+	state. This is done via ReliableDictionary in the ServiceFabric</li>
+	<li><strong>Actor service :</strong> Is intended for tiny discrete bits of 
+	functionality that send messages to each other. think 1000nds of actors all 
+	doing very small bits of work sending messages to each other</li>
+	<li><strong>Guest executable : </strong>Allows you to package up virtually 
+	anything (exe, node app whatever) and have it run on the fabric</li>
+	<li><strong>Container :</strong> Container that will run on the fabric</li>
+	<li><strong>ASP Core : </strong>Either web Api type app or stateful http app</li>
+</ul>
+<p>For this article we will ONLY be examining "stateless service" as the 
+techniques would apply to other types of services shown above fairly well.</p>
+<p>&nbsp;</p>
+<p>When you create a new Service Fabric app, you will see something like this</p>
+<p><img alt="" height="1124" src="projects.png" width="608"></p>
+<p>&nbsp;</p>
+<p>There are 2 distinct things at play here</p>
+<p>&nbsp;</p>
+<h3>The Application</h3>
+<p>The actual Application contains several VERY important things, namely:</p>
+<ul>
+	<li>ApplicationManifest.xml : Which tells the fabric exactly what services, 
+	and their types and how many of each should be deployed. This is the 
+	requirments for the entire set of services to deploy. This may be 1 or more 
+	services</li>
+	<li>Application Parameter files : The parameters needed to run the services 
+	specified</li>
+	<li>Publish Profile files : The publish profile files describing where to 
+	deploy to</li>
+</ul>
+<p>&nbsp;</p>
+<h3>The Services</h3>
+<p>Each individual service is its own project. And has its own config, 
+ServiceManifest.xml file. We will look at that more later. For now its important 
+just to understand that each Service has its own project.</p>
+<p>&nbsp;</p>
+<p>The main code for a fresh out the box Service will looks very similiar to 
+this. But we will discuss this more later too.</p>
+<pre lang="cs">
+using System;
+using System.Collections.Generic;
+using System.Fabric;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.ServiceFabric.Data.Collections;
+using Microsoft.ServiceFabric.Services.Communication.Runtime;
+using Microsoft.ServiceFabric.Services.Runtime;
+
+namespace Stateful1
+{
+    /// &lt;summary&gt;
+    /// An instance of this class is created for each service 
+    /// replica by the Service Fabric runtime.
+    /// &lt;/summary&gt;
+    internal sealed class Stateful1 : StatefulService
+    {
+        public Stateful1(StatefulServiceContext context)
+            : base(context)
+        { }
+
+        /// &lt;summary&gt;
+        /// Optional override to create listeners (e.g., HTTP, Service Remoting, WCF, etc.) 
+		/// for this service replica to handle client or user requests.
+        /// &lt;/summary&gt;
+        /// &lt;remarks&gt;
+        /// For more information on service communication, 
+        /// see https://aka.ms/servicefabricservicecommunication
+        /// &lt;/remarks&gt;
+        /// &lt;returns&gt;A collection of listeners.&lt;/returns&gt;
+        protected override IEnumerable&lt;ServiceReplicaListener&gt; CreateServiceReplicaListeners()
+        {
+            return new ServiceReplicaListener[0];
+        }
+
+        /// &lt;summary&gt;
+        /// This is the main entry point for your service replica.
+        /// This method executes when this replica of your service becomes primary and has write status.
+        /// &lt;/summary&gt;
+        /// &lt;param name="cancellationToken"&gt;Canceled when Service Fabric needs to
+        ///	shut down this service replica.&lt;/param&gt;
+        protected override async Task RunAsync(CancellationToken cancellationToken)
+        {
+            // TODO: Replace the following sample code with your own logic 
+            //       or remove this RunAsync override if it's not needed in your service.
+
+            ...
+        }
+    }
+}
+</pre>
+<p>&nbsp;</p>
+<p>As stated above you may have 1 or more services. But when you start you will 
+only have 1. To add another service you right click on the Application project, 
+and Add. This is shown in the screen shot below.</p>
+<p><a href="AddBig.png" target="_blank"><img alt="" height="479" src="AddSmall.png" width="630"></a></p>
+<p><em>CLICK FOR BIGGER IMAGE</em></p>
+
+<p>&nbsp;</p>
 <h3>Intentions</h3>
+<p>The service fabric works a bit like tools like Kubernetes in that you 
+describe what you want to run, and how many of them, and the fabric takes care 
+of the rest. This is done via the <strong>ApplicationManifest.xml </strong>file</p>
+<p>&nbsp;</p>
+<p><strong>Application</strong></p>
+<p>The application has a very important file that deals with intentions 
+<strong>ApplicationManifest.xml.</strong> This file may look as shown below, and is the file that 
+relays the intentions of the deployment to the fabric. It has things about what 
+services should be deployed, what version they are, how many of each, overriden 
+parameters, what certificates to use etc etc</p>
+<p>&nbsp;</p>
+<p>This is a very important file to understand</p>
+<p>&nbsp;</p>
+<pre lang="xml">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;ApplicationManifest ApplicationTypeName="Application1Type"
+                     ApplicationTypeVersion="1.0.0"
+                     xmlns="http://schemas.microsoft.com/2011/01/fabric"
+                     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+  &lt;Parameters&gt;
+    &lt;Parameter Name="Stateful1_MinReplicaSetSize" DefaultValue="3" /&gt;
+    &lt;Parameter Name="Stateful1_PartitionCount" DefaultValue="1" /&gt;
+    &lt;Parameter Name="Stateful1_TargetReplicaSetSize" DefaultValue="3" /&gt;
+    &lt;Parameter Name="Stateless1_InstanceCount" DefaultValue="-1" /&gt;
+  &lt;/Parameters&gt;
+  &lt;!-- Import the ServiceManifest from the ServicePackage. The ServiceManifestName and ServiceManifestVersion 
+       should match the Name and Version attributes of the ServiceManifest element defined in the 
+       ServiceManifest.xml file. --&gt;
+  &lt;ServiceManifestImport&gt;
+    &lt;ServiceManifestRef ServiceManifestName="Stateful1Pkg" ServiceManifestVersion="1.0.0" /&gt;
+    &lt;ConfigOverrides /&gt;
+  &lt;/ServiceManifestImport&gt;
+  &lt;ServiceManifestImport&gt;
+    &lt;ServiceManifestRef ServiceManifestName="Stateless1Pkg" ServiceManifestVersion="1.0.0" /&gt;
+    &lt;ConfigOverrides /&gt;
+  &lt;/ServiceManifestImport&gt;
+  &lt;DefaultServices&gt;
+    &lt;!-- The section below creates instances of service types, when an instance of this 
+         application type is created. You can also create one or more instances of service type using the 
+         ServiceFabric PowerShell module.
+         
+         The attribute ServiceTypeName below must match the name defined in the imported ServiceManifest.xml file. --&gt;
+    &lt;Service Name="Stateful1"&gt;
+      &lt;StatefulService ServiceTypeName="Stateful1Type" 
+                       TargetReplicaSetSize="[Stateful1_TargetReplicaSetSize]" 
+                       MinReplicaSetSize="[Stateful1_MinReplicaSetSize]"&gt;
+        &lt;UniformInt64Partition PartitionCount="[Stateful1_PartitionCount]" 
+                               LowKey="-9223372036854775808" HighKey="9223372036854775807" /&gt;
+      &lt;/StatefulService&gt;
+    &lt;/Service&gt;
+    &lt;Service Name="Stateless1"&gt;
+      &lt;StatelessService ServiceTypeName="Stateless1Type" 
+                        InstanceCount="[Stateless1_InstanceCount]"&gt;
+        &lt;SingletonPartition /&gt;
+      &lt;/StatelessService&gt;
+    &lt;/Service&gt;
+  &lt;/DefaultServices&gt;
+&lt;/ApplicationManifest&gt;</pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><strong>Service</strong></p>
+<p>So above we mentioned that each service has 2 things that are important from 
+an infrastructure point of view, it has information about what the main entry 
+point class is, and what endpoints this service has.</p>
+<p><strong>ServiceManifest.xml </strong>which might look like this, that 
+describes how to luanch THAT service</p>
+<pre lang="xml">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;ServiceManifest Name="Stateful1Pkg"
+                 Version="1.0.0"
+                 xmlns="http://schemas.microsoft.com/2011/01/fabric"
+                 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+  &lt;ServiceTypes&gt;
+    &lt;!-- This is the name of your ServiceType. 
+         This name must match the string used in RegisterServiceType call in Program.cs. --&gt;
+    &lt;StatefulServiceType ServiceTypeName="Stateful1Type" HasPersistedState="true" /&gt;
+  &lt;/ServiceTypes&gt;
+
+  &lt;!-- Code package is your service executable. --&gt;
+  &lt;CodePackage Name="Code" Version="1.0.0"&gt;
+    &lt;EntryPoint&gt;
+      &lt;ExeHost&gt;
+        &lt;Program&gt;Stateful1.exe&lt;/Program&gt;
+      &lt;/ExeHost&gt;
+    &lt;/EntryPoint&gt;
+  &lt;/CodePackage&gt;
+
+  &lt;!-- Config package is the contents of the Config directoy under PackageRoot that contains an 
+       independently-updateable and versioned set of custom configuration settings for your service. --&gt;
+  &lt;ConfigPackage Name="Config" Version="1.0.0" /&gt;
+
+  &lt;Resources&gt;
+    &lt;Endpoints&gt;
+      &lt;!-- This endpoint is used by the communication listener to obtain the port on which to 
+           listen. Please note that if your service is partitioned, this port is shared with 
+           replicas of different partitions that are placed in your code. --&gt;
+      &lt;Endpoint Name="ServiceEndpoint" /&gt;
+
+      &lt;!-- This endpoint is used by the replicator for replicating the state of your service.
+           This endpoint is configured through a ReplicatorSettings config section in the Settings.xml
+           file under the ConfigPackage. --&gt;
+      &lt;Endpoint Name="ReplicatorEndpoint" /&gt;
+    &lt;/Endpoints&gt;
+  &lt;/Resources&gt;
+&lt;/ServiceManifest&gt;
+</pre>
+<p>&nbsp;</p>
+<p><strong>Settings.xml</strong> that might look like this, that describe what 
+parameters THAT service expects</p>
+<pre lang="xml">
+&lt;?xml version="1.0" encoding="utf-8" ?&gt;
+&lt;Settings xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xmlns="http://schemas.microsoft.com/2011/01/fabric"&gt;
+  &lt;!-- This is used by the StateManager's replicator. --&gt;
+  &lt;Section Name="ReplicatorConfig"&gt;
+    &lt;Parameter Name="ReplicatorEndpoint" Value="ReplicatorEndpoint" /&gt;
+  &lt;/Section&gt;
+  &lt;!-- This is used for securing StateManager's replication traffic. --&gt;
+  &lt;Section Name="ReplicatorSecurityConfig" /&gt;
+
+  &lt;!-- Add your custom configuration sections and parameters here. --&gt;
+  &lt;!--
+  &lt;Section Name="MyConfigSection"&gt;
+    &lt;Parameter Name="MyParameter" Value="Value1" /&gt;
+  &lt;/Section&gt;
+  --&gt;
+&lt;/Settings&gt;
+</pre>
+<p>More on this later</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
 <h3>Inter Service Comms</h3>
+<p>So the service fabric also allows you to open up ports to the outside world. 
+Now this may not be something you need to do at all, for example your service 
+could get work via polling a database table, reading a queue, or getting sent a 
+message via a bus, but if you do need to expose a port that is done in this 
+method. You can read more about this here : <a href="https://aka.ms/servicefabricservicecommunication">
+https://aka.ms/servicefabricservicecommunication</a>&nbsp;</p>
+<pre lang="cs">
+protected override IEnumerable&lt;ServiceReplicaListener&gt; CreateServiceReplicaListeners()</pre>
+<pre lang="cs">
+&nbsp;</pre>
+<p>To get a better understanding of this method, you could create a ASP .Net 
+Core service fabric example that would fill this method in for you, so you could 
+better understand it. For the code in this demo its just not relevant.</p>
+<p>&nbsp;</p>
+<h3>Where Do I Put My Code To Do Stuff?</h3>
+<p>So you might now be wondering where do I put my own code? This is a simple 
+question to answer. You simply fill in this method. You MUST observe the 
+CancellationToken, if you do not the platform will boot your services down in 
+the most dramatic way known. Observing the CancellationToken is your ONLY chance 
+to shutdown gracefully.</p>
+<pre lang="cs">
+protected override async Task RunAsync(CancellationToken cancellationToken)
+</pre>
+<p>&nbsp;</p>
 <h3>Importance Of Correct Configuration</h3>
 <p>To run the Service Fabric you MUST ensure that it runs with <strong>x64 as 
 the platform</strong>. An example is shown below for the code that accompanies 
@@ -146,22 +420,7 @@ this article</p>
 <p><a href="configBig.png" target="_blank"><img alt="" height="444" src="configSmall.png" width="640"></a></p>
 <p><em>CLICK FOR BIGGER IMAGE</em></p>
 <p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<h2>Bringing IOC Into The Fold</h2>
-<p>&nbsp;</p>
-<h2>Some Better Logging : Serilog/Seq</h2>
-<p>&nbsp;</p>
-<h2>Getting To Know The New Config System</h2>
-<p>&nbsp;</p>
-<h2>Lets Keep Those Details Safe</h2>
-<h3>Creating A Self Sign Cert</h3>re 
-<h3>The Importance Of Powershell (current/latest versions)</h3>
-<h3>What About Real Life Cluster?</h3>
-<h3>Installing The Self Sign Cert</h3>
-<h3>Using The Self Sign Cert</h3>
-<p>&nbsp;</p>
-<h2>Depoyment/Publish Profiles</h2>
+<h3>Deployment/Publish Profiles</h3>
 <p>The Service Fabric builds apon previous Azure successes, and Publish profiles 
 are one such success. These are a simple idea, where we have a profile matched 
 with a deployment that specifies the requirments needed for THAT deployments via 
@@ -216,9 +475,15 @@ creates the correct structure to release. This is avaiable via a right click in
 the main project (the one with the "ApplicationManifest.xml in it)</p>
 </div>
 <p><img alt="" height="369" src="package.png" width="640"></p>
+<p>You do not need to publish if running locally. If however you wish to publish 
+to a real cluster you can do that from Visual Studio. In which case steps are</p>
+<ol>
+	<li>Package the code</li>
+	<li>Publish, at which point you will be prompted for which Publish Profile 
+	file to use</li>
+</ol>
 <p>&nbsp;</p>
-<p>&nbsp;</p>
-<h2>The Cluster Manager</h2>
+<h3>The Cluster Manager</h3>
 <p>As I stated in the introductory section of this article the Azure Service 
 Fabric comes with a rather nice cluster manager (which I have to say looks like 
 it stole a lot of inspiration from the DataStax Cassandra cluster manager). This 
@@ -248,6 +513,597 @@ setup or the Azure portal)&nbsp;</p>
 <p><a href="clusterManagerSmall.png" target="_blank"><img alt="" height="360" src="clusterManagerSmall.png" width="640"></a></p>
 <p>&nbsp;</p>
 <p><em>CLICK FOR BIGGER IMAGE</em></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h1>The Demo Code</h1>
+<p>So what exactly does the demo code do?</p>
+<p>Ok now that we have covered the basics of what the fabric is, and looked at 
+what a new project might look like and what methods we have, it's time to now 
+turn our attention to the main part of this article which is to show how you can 
+do all the normal stuff like:</p>
+<ul>
+	<li>Stateless service that does NOT expose a port to the outside world. If 
+	you want that you will need to do the reading suggested in the topic about 
+	"inter service comms" above</li>
+	<li>Proper IOC&nbsp; / dependency injection</li>
+	<li>Logging</li>
+	<li>Protecting sensitive passwords in connection strings</li>
+</ul>
+<p>The rest of this article will be covering these aspects</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>Bringing IOC Into The Fold</h2>
+<p>Like it or not, IOC/DI does play a part in providing a good separation of 
+concerns, and allows for more testable pluggable code. To that end it is a good 
+idea to apply IOC/DI to your own service fabric services. </p>
+<p>But how, which container do I use, there are so many.</p>
+<p>That's true there are a lot of containers, I looked around for the ones that 
+have good support for service fabric, and then whittled that one down to the one 
+I had used the most, which for me was <strong>Autofac</strong> (<a href="https://autofac.org/">https://autofac.org/</a>)</p>
+<p>The service fabric support is not part of the main <strong>Autofac</strong> 
+code base, but can be found here :
+<a href="https://github.com/autofac/Autofac.ServiceFabric">
+https://github.com/autofac/Autofac.ServiceFabric</a> with insrtuctions on use 
+here :
+<a href="https://alexmg.com/posts/introducing-the-autofac-integration-for-service-fabric">
+https://alexmg.com/posts/introducing-the-autofac-integration-for-service-fabric</a></p>
+<p>&nbsp;</p>
+<p>You could probably apply the code found here :
+<a href="https://github.com/autofac/Autofac.ServiceFabric">
+https://github.com/autofac/Autofac.ServiceFabric</a>&nbsp; to your favourite 
+container, but for me I am happy enough to just use <strong>Autofac</strong>, so 
+lets see how to use it.</p>
+<p>&nbsp;</p>
+<p>So it starts by including these 2 Nuget packages (these will bring in the 
+other transative dependencies you need)</p>
+<pre lang="xml">
+&lt;package id="Autofac" version="4.6.2" targetFramework="net461" /&gt;
+&lt;package id="Autofac.ServiceFabric" version="1.0.0" targetFramework="net462" /&gt;</pre>
+<pre lang="xml">
+&nbsp;</pre>
+<p>After you have that you will need build the <strong>Autofac</strong> container, and register the types you want, and also use the 
+<code>RegisterServiceFabricSupport()</code> extension method</p>
+<p>&nbsp;</p>
+<p>Here is an example that registers a stateless service as well as a few other classes that the stateless service in this
+demo code rely on</p>
+<pre lang="cs">
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Autofac;
+using Autofac.Integration.ServiceFabric;
+using Serilog;
+using Stateless1.Serilog.ServiceFabric;
+
+namespace Stateless1
+{
+    public class ContainerOperations
+    {
+        private static readonly Lazy&lt;IContainer&gt; _containerSingleton = 
+        	new Lazy&lt;IContainer&gt;(CreateContainer);
+
+        public static bool UseAzureWireup { get; set; }
+
+
+        public static IContainer Container =&gt; _containerSingleton.Value;
+
+        private static IContainer CreateContainer()
+        {
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new GlobalAutofacModule());
+            if (UseAzureWireup)
+            {
+                builder.RegisterServiceFabricSupport();
+                // This needs to match the name of gthe type in 
+                //PackageRoot\ServiceManifest.xml AND ApplicationPackageRoot\ApplicationManifest
+                builder.RegisterStatelessService&lt;Stateless1&gt;("Stateless1Type");
+            }
+            return builder.Build();
+
+        }
+    }
+
+
+    public class GlobalAutofacModule : Module
+    {
+        protected override void Load(ContainerBuilder builder)
+        {
+            builder.Register&lt;ILogger&gt;(container =&gt; Program.LoggerSingleton.Value);
+
+            builder.RegisterType&lt;ServiceLoggerFactory&gt;()
+                .SingleInstance();
+
+            builder.RegisterType&lt;ServiceConfiguration&gt;()
+                .AsSelf()
+                .SingleInstance();
+
+            builder.Register(c =&gt; Log.Logger)
+                .As&lt;ILogger&gt;()
+                .SingleInstance();
+        }
+    }
+}
+</pre>
+<p><strong>NOTE:</strong> It is very important that you use the name of the service from the&nbsp; <code>ApplicationPackageRoot\ApplicationManifest</code> when 
+you register the services using <strong>Autofac</strong>, this allows the dynamic proxy that 
+<strong>Autofac</strong> will build to find the correct type/version of the service to create</p>
+<pre>Here is the relevant code for this demo service thathas dependencies that need satisfying</pre>
+<pre lang="cs">
+using System;
+using System.Collections.Generic;
+using System.Fabric;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.ServiceFabric.Services.Communication.Runtime;
+using Microsoft.ServiceFabric.Services.Runtime;
+using Serilog;
+using Stateless1.Extensions;
+using Stateless1.Serilog.ServiceFabric;
+
+namespace Stateless1
+{
+    public class Stateless1 : StatelessService, IDisposable
+    {
+        private readonly ServiceConfiguration _configuration;
+        private ILogger _log;
+
+        public Stateless1(
+            StatelessServiceContext context,
+            ServiceLoggerFactory serviceLoggerFactory,
+            ServiceConfiguration configuration
+        ) : base(context)
+        {
+			.....
+			.....
+			.....
+			.....
+        }
+    }
+}
+</pre>
+<p>The final step for this <strong>Autofac</strong> example usage is the <code>Program</code> (main entry point) classes code, which is as shown below</p>
+<pre lang="cs">
+using System;
+using System.Diagnostics;
+using System.Fabric;
+using System.Threading;
+using System.Threading.Tasks;
+using Autofac;
+using Microsoft.ServiceFabric.Services.Runtime;
+using Serilog;
+using Serilog.Events;
+using Stateless1.Extensions;
+
+namespace Stateless1
+{
+    internal static class Program
+    {
+
+        private static ILogger _log = null;
+        internal static readonly Lazy&lt;ILogger&gt; LoggerSingleton = 
+        	new Lazy&lt;ILogger&gt;(ConfigureLogging);
+
+        /// &lt;summary&gt;
+        /// This is the entry point of the service host process.
+        /// &lt;/summary&gt;
+        private static void Main()
+        {
+            _log = LoggerSingleton.Value;
+
+            try
+            {
+                ContainerOperations.UseAzureWireup = true;
+
+                using (var _container = ContainerOperations.Container)
+                {
+                    LogAutofacRegistrations(_container);
+
+                    _log.Information("Starting {AppName} v{AppVersion} application", AppName, AppVersion);
+
+
+                    // The ServiceManifest.XML file defines one or more service type names.
+                    // Registering a service maps a service type name to a .NET type.
+                    // When Service Fabric creates an instance of this service type,
+                    // an instance of the class is created in this host process.
+
+                    // Prevents this host process from terminating so services keep running.
+                    Thread.Sleep(Timeout.Infinite);
+                }
+            }
+            catch (Exception ex)
+            {
+                ServiceEventSource.Current.ServiceHostInitializationFailed(ex.ToString());
+                _log.Fatal(ex, $"Error starting {typeof(Stateless1).Name} Service");
+                throw;
+            }
+        }
+
+
+        private static void LogAutofacRegistrations(IContainer container)
+        {
+            foreach (var registration in container.ComponentRegistry.Registrations)
+            {
+                foreach (var service in registration.Services)
+                {
+                    _log.Debug("Autofac: {dependency} resolves to {implementation}, {lifetime}, {sharing}, {ownership}",
+                        service, registration.Activator.LimitType, registration.Lifetime, 
+                        registration.Sharing, registration.Ownership);
+                }
+            }
+        }
+    }
+}
+</pre>
+<p>It can be seen (or rather not seen) that the code above <strong>NEVER</strong> creates a new service directly. This in stark contrast to the "out of the box" template
+code you get when creating a new Service Fabric app in Visual Studio. So how do our required services get started?</p>
+<p>Well like I said above the line where you register your required services in the 
+<strong>Autofac</strong> module uses the special string values from
+the <strong>Application/ApplicationManifest.xml</strong>. So AutoFac takes care of bringing up those instances, which keeps the deployment happy</p>
+<p>&nbsp;</p>
+<p>And that is all there is to the IOC side of things with Autofac. Like I say 
+if you have some other favourite IOC container you may have to see if it 
+supports the service fabric, if not you may have to dig about in here :
+<a href="https://github.com/autofac/Autofac.ServiceFabric">
+https://github.com/autofac/Autofac.ServiceFabric</a> to see if you can apply the 
+same techniques to your container of choice </p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>Some Better Logging : Serilog/Seq</h2>
+<p>Ah logging, now what can you say you need to be able to log stuff right. Out 
+of the box the Service Fabric template comes with this diagnostics writer (I 
+have left that in the demo code for this article so you can see it), called 
+"ServiceEventSource" which will have log messages turn up in the windows event 
+log. Fair enough, but a bit crude for my taste.</p>
+<p>There are many logging choices out there, but I do like the
+<a href="https://serilog.net/" target="_blank">Serilog</a>/<a href="https://getseq.net/" target="_blank">Seq</a> 
+combination. I like Serilog cos it has lots of Sinks and Iike the concept of 
+enrichers and it is a fully structured text logger, which is ace. I like Seq as 
+it offers me a nice searchable web front end with pretty much 1 line of extra 
+code.</p>
+<p>Here is an example of Seq in action</p>
+<p><a href="SeqBig.png" target="_blank"><img alt="" height="343" src="SeqSmall.png" width="630"></a></p>
+<p><em>CLICK FOR BIGGER IMAGE</em></p>
+<p>&nbsp;</p>
+<p>So what do we need to set this up?</p>
+<p>Well you will need to start with these Nuget packages</p>
+<pre lang="xml">
+&lt;package id="Serilog" version="2.6.0-dev-00925" targetFramework="net462" /&gt;
+&lt;package id="Serilog.Enrichers.Environment" version="2.1.3-dev-00736" targetFramework="net462" /&gt;
+&lt;package id="Serilog.Enrichers.Process" version="2.0.1" targetFramework="net462" /&gt;
+&lt;package id="Serilog.Formatting.Compact" version="1.0.1-dev-00922" targetFramework="net462" /&gt;
+&lt;package id="Serilog.Settings.AppSettings" version="2.1.2" targetFramework="net462" /&gt;
+&lt;package id="Serilog.Sinks.ColoredConsole" version="3.0.1" targetFramework="net462" /&gt;
+&lt;package id="Serilog.Sinks.Console" version="3.0.1" targetFramework="net462" /&gt;
+&lt;package id="Serilog.Sinks.File" version="4.0.0" targetFramework="net462" /&gt;
+&lt;package id="Serilog.Sinks.PeriodicBatching" version="2.1.1" targetFramework="net462" /&gt;
+&lt;package id="Serilog.Sinks.RollingFile" version="3.3.1-dev-00771" targetFramework="net462" /&gt;
+&lt;package id="Serilog.Sinks.Seq" version="4.0.0-dev-00150" targetFramework="net462" /&gt;
+</pre>
+<p>&nbsp;</p>
+<p>Then since we are using a cluster of nodes (recall the service fabric is a 
+cluster of VMs), wouldn't it be nice if we could include the node that things 
+were happening on in our log messages? I think so. How can we do that</p>
+<p>&nbsp;</p>
+<h3>Enrichers</h3>
+<p>Seq does allow you to supply runtime logging properties via things called 
+"Enrichers" (see <a href="https://github.com/serilog/serilog/wiki/Enrichment">
+https://github.com/serilog/serilog/wiki/Enrichment</a>). We can use these to add 
+the extra logging values we want, lets see how</p>
+<p>It starts with this simple helper class</p>
+<pre lang="cs">
+using System;
+using System.Collections.Generic;
+using System.Fabric;
+using System.Linq;
+using System.Runtime.Remoting.Contexts;
+using System.Text;
+using System.Threading.Tasks;
+using Serilog.Core;
+using Serilog.Events;
+
+namespace Stateless1.Serilog.ServiceFabric
+{
+    public class ServiceEnricher&lt;T&gt; : ServiceFabricEnricher&lt;T&gt; where T : ServiceContext
+    {
+        private LogEventProperty _serviceName;
+        private LogEventProperty _partitionId;
+        private LogEventProperty _applicationName;
+
+        public ServiceEnricher(T context) : base(context)
+        {
+        }
+
+        public override void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
+        {
+            base.Enrich(logEvent, propertyFactory);
+
+            if (_serviceName == null) _serviceName = 
+                    propertyFactory.CreateProperty("ServiceName", Context.ServiceName);
+
+            if (_partitionId == null) _partitionId = 
+                    propertyFactory.CreateProperty("PartitionId", Context.PartitionId);
+
+            if (_applicationName == null) _applicationName = 
+                    propertyFactory.CreateProperty("ApplicationName", 
+                        Context.CodePackageActivationContext.ApplicationName);
+
+            logEvent.AddPropertyIfAbsent(_serviceName);
+            logEvent.AddPropertyIfAbsent(_partitionId);
+            logEvent.AddPropertyIfAbsent(_applicationName);
+        }
+    }
+}
+</pre>
+<p>Where we use the service fabric <code>ServiceContext</code> object to give us the extra service values to log. </p>
+<p>Ok so another helper class is up next, but this time this gives us "node" information to log.</p>
+<pre lang="cs">
+using System;
+using System.Collections.Generic;
+using System.Fabric;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Serilog.Core;
+using Serilog.Events;
+
+namespace Stateless1.Serilog.ServiceFabric
+{
+    public class ServiceFabricEnricher&lt;T&gt; : ILogEventEnricher where T : ServiceContext
+    {
+        protected T Context { get; }
+        private LogEventProperty _nodeName;
+
+        public ServiceFabricEnricher(T context)
+        {
+            Context = context;
+        }
+
+        public virtual void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
+        {
+            if (_nodeName == null)
+            {
+                _nodeName = propertyFactory.CreateProperty("NodeName", 
+                    Context.NodeContext.NodeName);
+            }
+            logEvent.AddPropertyIfAbsent(_nodeName);
+        }
+    }
+}
+</pre>
+<p>And then we need a custom logger factory</p>
+<pre lang="cs">
+using System;
+using System.Collections.Generic;
+using System.Fabric;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.ServiceFabric.Services.Runtime;
+using Serilog;
+
+namespace Stateless1.Serilog.ServiceFabric
+{
+    public class ServiceLoggerFactory
+    {
+        private ILogger _logger;
+        private int _hasBeenEnriched;
+
+        public ServiceLoggerFactory(ILogger logger)
+        {
+            _logger = logger;
+        }
+
+        public ILogger EnrichLoggerForStatelessServiceContext(StatelessService service)
+        {
+            if (Interlocked.Exchange(ref _hasBeenEnriched, 1) == 0)
+            {
+                _logger = _logger?.ForContext(new[] 
+                    {
+                        new ServiceEnricher&lt;StatelessServiceContext&lt;(service.Context)
+                    }
+                );
+            }
+            return _logger;
+        }
+
+        public ILogger GetEnrichedLogger()
+        {
+            return _logger;
+        }
+    }
+}</pre>
+<p>We then need to apply this to the actual services such that 
+they use the enrichers. We MUST only apply the enrichers in the services 
+themselves as they ARE the things that will have information about the 
+service/nodes, as the services ARE the things that ARE run on the service fabric 
+cluster. Applying the enrichers any where else will not work. This work can be 
+done in the service constructor code</p>
+<pre lang="cs">
+using System;
+using System.Collections.Generic;
+using System.Fabric;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.ServiceFabric.Services.Communication.Runtime;
+using Microsoft.ServiceFabric.Services.Runtime;
+using Serilog;
+using Stateless1.Extensions;
+using Stateless1.Serilog.ServiceFabric;
+
+namespace Stateless1
+{
+    public class Stateless1 : StatelessService, IDisposable
+    {
+        private readonly ServiceConfiguration _configuration;
+        private ILogger _log;
+
+        public Stateless1(
+            StatelessServiceContext context,
+            ServiceLoggerFactory serviceLoggerFactory,
+            ServiceConfiguration configuration
+        ) : base(context)
+        {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+
+            _configuration = configuration;
+			
+			//ENRICH
+            _log = serviceLoggerFactory.EnrichLoggerForStatelessServiceContext(this);
+
+            _log.Information("Stateless1 constructed ok");
+        }
+    }
+}
+</pre>
+<p>The very last thing to do is configure the logging. This is a standard thing to have to do with Serilog. This can be done in the <code>Program</code> (main entry point) 
+code.</p>
+<pre lang="cs">
+using System;
+using System.Diagnostics;
+using System.Fabric;
+using System.Threading;
+using System.Threading.Tasks;
+using Autofac;
+using Microsoft.ServiceFabric.Services.Runtime;
+using Serilog;
+using Serilog.Events;
+using Stateless1.Extensions;
+
+namespace Stateless1
+{
+    internal static class Program
+    {
+
+        private static ILogger _log = null;
+        internal static readonly Lazy&lt;ILogger&gt; LoggerSingleton = new Lazy&lt;ILogger&gt;(ConfigureLogging);
+
+        /// &lt;summary&gt;
+        /// This is the entry point of the service host process.
+        /// &lt;/summary&gt;
+        private static void Main()
+        {
+
+            _log = LoggerSingleton.Value;
+
+            .....
+			.....
+			.....
+			.....
+        }
+
+
+        private static ILogger ConfigureLogging()
+        {
+            AppDomain.CurrentDomain.ProcessExit += (sender, args) =&gt; Log.CloseAndFlush();
+
+            var configPackage = FabricRuntime.GetActivationContext().GetConfigurationPackageObject("Config");
+            var environmentName = GetSetting(configPackage, "appSettings", 
+				"simpleStatelessServiceFabricDemo:EnvironmentName");
+            var seqRestrictedToMinimumLevel = GetSetting(configPackage, 
+				"appSettings", "simpleStatelessServiceFabricDemo:serilog:write-to:Seq.restrictedToMinimumLevel");
+            var seqServerUrl = GetSetting(configPackage, 
+				"appSettings", "simpleStatelessServiceFabricDemo:serilog:write-to:Seq.serverUrl");
+            var seqLogEventLevel = LogEventLevel.Verbose;
+            Enum.TryParse(seqRestrictedToMinimumLevel, true, out seqLogEventLevel);
+
+            var loggerConfiguration = new LoggerConfiguration()
+                .WriteTo.Seq(seqServerUrl, restrictedToMinimumLevel: seqLogEventLevel)
+                .Enrich.WithProperty("AppName", Program.AppName)
+                .Enrich.WithProperty("AppVersion", Program.AppVersion)
+                .Enrich.WithProperty("EnvName", environmentName);
+
+
+            if (Environment.UserInteractive)
+            {
+                loggerConfiguration.WriteTo.ColoredConsole();
+            }
+
+            return Log.Logger = loggerConfiguration.CreateLogger();
+        }
+
+
+        private static string GetSetting(ConfigurationPackage configurationPackage, string section, string parameterName)
+        {
+            var param = configurationPackage.Settings.Sections[section].Parameters[parameterName];
+            return param.IsEncrypted ? param.DecryptValue().ConvertToUnsecureString() : param.Value;
+        }
+
+        public static readonly string AppName = typeof(Program).Assembly.GetName().Name;
+        public static readonly string AppVersion = typeof(Program).Assembly.GetInformationalVersion();
+    }
+}
+</pre>
+<p>Now there is some funky code in tere that deals with getting values out of the many layers of service fabric config files. 
+This is something we will be getting into below. </p>
+<p>For now just understand that you may want "Verbose" in dev environment, and 
+"Error" in production environment, which as stated right at the start of this 
+article, would be handled by different "publish profile" / "parameter file" 
+files. We will look at this next, but in order to get stuff out of these files 
+we need to use the service fabric configuration system, which is why this code 
+above looks a bit funky. It is essentially pulling values from the correct 
+config location to match the specified environment, but as I say more on this 
+later.</p>
+<p>&nbsp;</p>
+
+<h2>Getting To Know The New Config System</h2>
+<p class="auto-style2">NEED TO DO THIS PART</p>
+<p>&nbsp;</p>
+<h2>Lets Keep Those Details Safe</h2>
+<p>Ok so we have seen that we can have encrypted/non-encrypted parameters. It is 
+probably a good idea to encrypt the connection strings (in my opinion). This 
+article is a MUST read as this is what we will be doing next</p>
+<p>
+<a href="https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-application-secret-management">
+https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-application-secret-management</a></p>
+<p>&nbsp;</p>
+<p>The basic idea is that we use a cipher certificate to encrypt our sensitive 
+data, and have the service fabric be aware of the cerifcate we used. This means 
+telling it what cert to try and find, and telling it which parameters are 
+encrypted. The certificates are typically created in Azure KeyVault and then 
+MUST be installed on ALL nodes in the cluster (and your dev VM to if you wish to 
+run the service with the <code>IsEncrypted="true"</code> for your parameters. 
+For my dev work, I regularly change the params to <code>IsEncrypted="false"</code> 
+and just change them back just before I check in. But it's your call.</p>
+<p>&nbsp;</p>
+<p>This diagram shows the basic idea</p>
+<p><a href="encBig.png" target="_blank"><img alt="" height="500" src="encSmall.png" width="630"></a></p>
+<p><em>CLICK FOR BIGGER IMAGE</em></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h3>Creating A Self Sign Cert</h3>
+<p class="auto-style2">NEED TO DO THIS PART</p>
+<p>&nbsp;</p>
+&nbsp;<h3>The Importance Of Powershell (current/latest versions)</h3>
+<p>We had an issue at work where we were using Powershell to create the 
+encryption certificates, and we would always get some weird "ACL certificate" 
+exception. This turned out to be due to an older version of the Azure PowerShell 
+encryption module being used. So make sure you have the latest module in use</p>
+<p>&nbsp;</p>
+<h3>Installing The Self Sign Cert</h3>
+<p class="auto-style2">NEED TO DO THIS PART</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h3>Using The Self Sign Cert</h3>
+<p class="auto-style2">NEED TO DO THIS PART</p>
+<p>&nbsp;</p>
+<h3>What About Real Life Cluster?</h3>
+<p>Yes so far we have been talking about testing a local cluster, that is one 
+running locally on your own box. So for a real cluster you will need to get 
+remote access to the actual nodes that form the real cluster (as created in 
+Portal/PowerShell) and install the certificate on those VMs as described in 
+steps above.</p>
+<p>&nbsp;</p>
 <p>&nbsp;</p>
 <h1>Conclusion</h1>
 <p>We are using the Azure Service Fabric a fair bit, and it has not let us down 
