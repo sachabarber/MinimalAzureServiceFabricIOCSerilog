@@ -8,8 +8,6 @@
     <Parameter Name="simpleStatelessServiceFabricDemo:UseServiceFabricEnhancements" Value="" MustOverride="true" IsEncrypted="false"/>
   </Section>
   <Section Name="encryptedSettings">
-    <Parameter Name="simpleStatelessServiceFabricDemo:SomeSafeKey" 
-               Value="" MustOverride="false" 
-               IsEncrypted="true"/>
+    <Parameter Name="simpleStatelessServiceFabricDemo:SomeSafeKey" Value="" MustOverride="false" IsEncrypted="true"/>
   </Section>
 </Settings>

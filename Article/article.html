@@ -1,30 +1,109 @@
-﻿
-<head>
-<style type="text/css">
-.auto-style1 {
-	margin-left: 40px;
-}
-.auto-style2 {
-	background-color: #FFFF00;
-}
-</style>
-</head>
 
-<div id="TOC"></div>
-<h1>Introduction</h1>
+
+<ul>
+<li><a href="#Introduction">Introduction</a></li>
+
+<li><a href="#What-Is-The-Azure-Service-Fabric">What Is The Azure Service Fabric</a>
+<ul>
+<li><a href="#Overview-Of-Azure-Service-Fabric">Overview Of Azure Service Fabric</a></li>
+
+<li><a href="#Applications-Composed-Of-Microservices">Applications Composed Of Microservices</a></li>
+
+<li><a href="#Any-OS,-Any-Cloud">Any OS, Any Cloud</a></li>
+
+<li><a href="#My-View">My View</a></li>
+
+</ul>
+
+<li><a href="#Where-Is-The-Code?">Where Is The Code?</a></li>
+
+<li><a href="#Prerequisites">Prerequisites</a></li>
+
+<li><a href="#What-Is-This-Article-Going-To-Show-Me?">What Is This Article Going To Show Me?</a></li>
+
+<li><a href="#Lets-Crack-On">Lets Crack On</a>
+<ul>
+<li><a href="#Anatomy-Of-An-Azure-Service-Fabric-Offering">Anatomy Of An Azure Service Fabric Offering</a>
+<ul>
+<li><a href="#The-Application">The Application</a></li>
+
+<li><a href="#The-Services">The Services</a></li>
+
+<li><a href="#Intentions">Intentions</a></li>
+
+<li><a href="#Inter-Service-Comms">Inter Service Comms</a></li>
+
+<li><a href="#Where-Do-I-Put-My-Code-To-Do-Stuff?">Where Do I Put My Code To Do Stuff?</a></li>
+
+<li><a href="#Importance-Of-Correct-Configuration">Importance Of Correct Configuration</a></li>
+
+<li><a href="#Deployment/Publish-Profiles">Deployment/Publish Profiles</a></li>
+
+<li><a href="#The-Cluster-Manager">The Cluster Manager</a></li>
+
+</ul>
+
+</ul>
+
+<li><a href="#The-Demo-Code">The Demo Code</a>
+<ul>
+<li><a href="#Bringing-IOC-Into-The-Fold">Bringing IOC Into The Fold</a></li>
+
+<li><a href="#Some-Better-Logging-:-Serilog/Seq">Some Better Logging : Serilog/Seq</a>
+<ul>
+<li><a href="#Enrichers">Enrichers</a></li>
+
+</ul>
+
+<li><a href="#Getting-To-Know-The-New-Config-System">Getting To Know The New Config System</a></li>
+
+<li><a href="#Lets-Keep-Those-Details-Safe">Lets Keep Those Details Safe</a>
+<ul>
+<li><a href="#Creating-A-Self-Sign-Cert">Creating A Self Sign Cert</a></li>
+
+<li><a href="#The-Importance-Of-Powershell-(current/latest-versions)">The Importance Of 
+PowerShell (current/latest versions)</a></li>
+
+<li><a href="#Installing-The-Self-Sign-Cert">Installing The Self Sign Cert</a></li>
+
+<li><a href="#Using-The-Self-Sign-Cert">Using The Self Sign Cert</a>
+<ul>
+<li><a href="#Step-1-:-Grab-the-certificate-thumbprint">Step 1 : Grab the certificate thumbprint</a></li>
+
+<li><a href="#Step-2-:-Use-the-certificate-thumbprint-in-the-ApplicationManifest.xml">Step 2 : Use the certificate thumbprint in the ApplicationManifest.xml</a></li>
+
+<li><a href="#Step-3-:-Make-sure-the-parameters-you-wish-to-use-are-encrypted">Step 3 : Make sure the parameters you wish to use are encrypted</a></li>
+
+<li><a href="#Step-4-:-Encrypt-the-values">Step 4 : Encrypt the values</a></li>
+
+<li><a href="#Step-5-:-Decrypt-the-values">Step 5 : Decrypt the values</a></li>
+
+</ul>
+
+<li><a href="#What-About-Real-Life-Cluster?">What About Real Life Cluster?</a></li>
+
+</ul>
+
+</ul>
+
+<li><a href="#Conclusion">Conclusion</a></li>
+
+</ul>
+
+<h1><a name="Introduction" id="Introduction">Introduction</a></h1>
 <p>In this article we will walk through using the Azure "Service Fabric". to my 
 mind this is one of the most fascinating things in the Azure platform offerings.</p>
 <p>We will also see how to use best practices such as dependency injection and 
 proper logging, and how to keep sensitive data safe when deploying to what is 
 essentially a public cloud.&nbsp;</p>
 <p>&nbsp;</p>
-<h1>What Is The Azure Service Fabric</h1>
+<h1><a name="What-Is-The-Azure-Service-Fabric" id="What-Is-The-Azure-Service-Fabric">What Is The Azure Service Fabric</a></h1>
 <p>So before we get into the guts of what this article does and how it does it. 
 Just what is the "Service Fabric"?</p>
 <p>To quote the official docs (they always say things quite nicely, little point 
-in trying to rewite what is already a good explanation)</p>
+in trying to rewrite what is already a good explanation)</p>
 <p>&nbsp;</p>
-<h2>Overview Of Azure Service Fabric</h2>
+<h2><a name="Overview-Of-Azure-Service-Fabric" id="Overview-Of-Azure-Service-Fabric">Overview Of Azure Service Fabric</a></h2>
 <p><em>Azure Service Fabric is a distributed systems platform that makes it easy to 
 package, deploy, and manage scalable and reliable microservices and containers. 
 Service Fabric also addresses the significant challenges in developing and 
@@ -38,40 +117,40 @@ enterprise-class, tier-1, cloud-scale applications running in containers.</em></
 <em>
 <img alt="" height="300" src="overviewvid.png" width="630"></em></a></p>
 <p class="auto-style1"><em></em></p>
-<h2>Applications Composed Of Microservices</h2>
-<p><em>ervice Fabric enables you to build and manage scalable and reliable 
+<h2><a name="Applications-Composed-Of-Microservices" id="Applications-Composed-Of-Microservices">Applications Composed Of Microservices</a></h2>
+<p><em>service Fabric enables you to build and manage scalable and reliable 
 applications composed of microservices that run at high density on a shared pool 
 of machines, which is referred to as a cluster. It provides a sophisticated, 
-lightweight runtime to build distributed, scalable, stateless, and stateful 
-microservices running in containers. It also provides comprehensive application 
+lightweight runtime to build distributed, scalable, stateless, and tasteful 
+micro services running in containers. It also provides comprehensive application 
 management capabilities to provision, deploy, monitor, upgrade/patch, and delete 
 deployed applications including containerized services.</em></p>
 <p><em><br>Service Fabric powers many Microsoft services today, including Azure 
-SQL Database, Azure Cosmos DB, Cortana, Microsoft Power BI, Microsoft Intune, 
+SQL Database, Azure Cosmos DB, Cortana, Microsoft Power BI, Microsoft In tune, 
 Azure Event Hubs, Azure IoT Hub, Dynamics 365, Skype for Business, and many core 
 Azure services.</em></p>
 <p><em><br>Service Fabric is tailored to create cloud native services that can 
 start small, as needed, and grow to massive scale with hundreds or thousands of 
 machines.</em></p>
-<p><em><br>Today's Internet-scale services are built of microservices. Examples 
-of microservices include protocol gateways, user profiles, shopping carts, 
-inventory processing, queues, and caches. Service Fabric is a microservices 
-platform that gives every microservice (or container) a unique name that can be 
+<p><em><br>Today's Internet-scale services are built of micro services. Examples 
+of micro services include protocol gateways, user profiles, shopping carts, 
+inventory processing, queues, and caches. Service Fabric is a micro services 
+platform that gives every micro service (or container) a unique name that can be 
 either stateless or stateful.</em></p>
 <p><em><br>Service Fabric provides comprehensive runtime and lifecycle 
 management capabilities to applications that are composed of these 
-microservices. It hosts microservices inside containers that are deployed and 
+micro services. It hosts micro services inside containers that are deployed and 
 activated across the Service Fabric cluster. </em></p>
 <p><em>A move from virtual machines to containers makes possible an 
 order-of-magnitude increase in density. Similarly, another order of magnitude in 
-density becomes possible when you move from containers to microservices in these 
+density becomes possible when you move from containers to micro services in these 
 containers. For example, a single cluster for Azure SQL Database comprises 
 hundreds of machines running tens of thousands of containers that host a total 
 of hundreds of thousands of databases. Each database is a Service Fabric 
-stateful microservice.<br>For more on the microservices approach, read Why a 
+stateful micro service.<br>For more on the micro services approach, read Why a 
 microservices approach to building applications?</em></p>
 <p><em></em></p>
-<h2>Any OS, Any Cloud</h2>
+<h2><a name="Any-OS,-Any-Cloud" id="Any-OS,-Any-Cloud">Any OS, Any Cloud</a></h2>
 <p><em>Service Fabric runs everywhere. You can create clusters for Service 
 Fabric in many environments, including Azure or on premises, on Windows Server, 
 or on Linux. You can even create clusters on other public clouds. In addition, 
@@ -84,7 +163,7 @@ development cluster deploys to the clusters in other environments.</em></p>
 https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-overview</a> 
 up on date 27/11/17</p>
 <p>&nbsp;</p>
-<h2>My View</h2>
+<h2><a name="My-View" id="My-View">My View</a></h2>
 <p>So the above is what the official Microsoft docs say, but what do I think?</p>
 <p>Well yes its does all of the above, but what drove me to look and use the 
 Service Fabric initially (A decision I have not regretted) is that is also 
@@ -93,7 +172,7 @@ offers these features</p>
 	<li>There is a concept of a cluster which is made up of a number of nodes 
 	(you pick this at creation time). So there is no central point of failure. 
 	Typically the cluster is not an even number</li>
-	<li>Side by side statless/staeful/actors all running in same fabric cluster 
+	<li>Side by side stateless/stateful/actors all running in same fabric cluster 
 	nodes (if you ever used the early Azure cloud services you will know this is 
 	a big win)</li>
 	<li>Self healing system, I would specify my intention via a config file, 
@@ -110,12 +189,12 @@ offers these features</p>
 	object to communicate with the cluster</li>
 </ul>
 <p>&nbsp;</p>
-<h1>Where Is The Code?</h1>
+<h1><a name="Where-Is-The-Code?" id="Where-Is-The-Code?">Where Is The Code?</a></h1>
 <p>I have the code in my Github repo :
 <a href="https://github.com/sachabarber/MinimalAzureServiceFabricIOCSerilog" target="_blank">
 https://github.com/sachabarber/MinimalAzureServiceFabricIOCSerilog</a></p>
 <p>&nbsp;</p>
-<h1>Prerequisites</h1>
+<h1><a name="Prerequisites" id="Prerequisites">Prerequisites</a></h1>
 <p>You will need to have the following components installed to run the code 
 associated with this article</p>
 <ul>
@@ -124,7 +203,7 @@ associated with this article</p>
 	<li>Visual Studio 2017</li>
 </ul>
 <p>&nbsp;</p>
-<h1>What Is This Article Going To Show Me?</h1>
+<h1><a name="What-Is-This-Article-Going-To-Show-Me?" id="What-Is-This-Article-Going-To-Show-Me?">What Is This Article Going To Show Me?</a></h1>
 <p>This article will hopefully give you a taster of what is possible with the 
 Azure Service Fabric, and will also show you how to perform common best 
 practices such as:</p>
@@ -137,8 +216,8 @@ practices such as:</p>
 	strings, its a public cloud after all)</li>
 </ul>
 <p>&nbsp;</p>
-<h1>Lets Crack On</h1>
-<h2>Anatomy Of An Azure Service Fabric Offering</h2>
+<h1><a name="Lets-Crack-On" id="Lets-Crack-On">Lets Crack On</a></h1>
+<h2><a name="Anatomy-Of-An-Azure-Service-Fabric-Offering" id="Anatomy-Of-An-Azure-Service-Fabric-Offering">Anatomy Of An Azure Service Fabric Offering</a></h2>
 <p>So we have talked a bit about the Service Fabric. But what sort of things can 
 we run on the Service Fabric?</p>
 <p>This is actually quite varied. For example this is what we see when we create 
@@ -170,12 +249,12 @@ techniques would apply to other types of services shown above fairly well.</p>
 <p>&nbsp;</p>
 <p>There are 2 distinct things at play here</p>
 <p>&nbsp;</p>
-<h3>The Application</h3>
+<h3><a name="The-Application" id="The-Application">The Application</a></h3>
 <p>The actual Application contains several VERY important things, namely:</p>
 <ul>
 	<li>ApplicationManifest.xml : Which tells the fabric exactly what services, 
 	and their types and how many of each should be deployed. This is the 
-	requirments for the entire set of services to deploy. This may be 1 or more 
+	requirements for the entire set of services to deploy. This may be 1 or more 
 	services</li>
 	<li>Application Parameter files : The parameters needed to run the services 
 	specified</li>
@@ -183,12 +262,12 @@ techniques would apply to other types of services shown above fairly well.</p>
 	deploy to</li>
 </ul>
 <p>&nbsp;</p>
-<h3>The Services</h3>
+<h3><a name="The-Services" id="The-Services">The Services</a></h3>
 <p>Each individual service is its own project. And has its own config, 
 ServiceManifest.xml file. We will look at that more later. For now its important 
 just to understand that each Service has its own project.</p>
 <p>&nbsp;</p>
-<p>The main code for a fresh out the box Service will looks very similiar to 
+<p>The main code for a fresh out the box Service will looks very similar to 
 this. But we will discuss this more later too.</p>
 <pre lang="cs">
 using System;
@@ -251,7 +330,7 @@ and Add. This is shown in the screen shot below.</p>
 <p><em>CLICK FOR BIGGER IMAGE</em></p>
 
 <p>&nbsp;</p>
-<h3>Intentions</h3>
+<h3><a name="Intentions" id="Intentions">Intentions</a></h3>
 <p>The service fabric works a bit like tools like Kubernetes in that you 
 describe what you want to run, and how many of them, and the fabric takes care 
 of the rest. This is done via the <strong>ApplicationManifest.xml </strong>file</p>
@@ -260,7 +339,7 @@ of the rest. This is done via the <strong>ApplicationManifest.xml </strong>file<
 <p>The application has a very important file that deals with intentions 
 <strong>ApplicationManifest.xml.</strong> This file may look as shown below, and is the file that 
 relays the intentions of the deployment to the fabric. It has things about what 
-services should be deployed, what version they are, how many of each, overriden 
+services should be deployed, what version they are, how many of each, overridden 
 parameters, what certificates to use etc etc</p>
 <p>&nbsp;</p>
 <p>This is a very important file to understand</p>
@@ -387,7 +466,7 @@ parameters THAT service expects</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h3>Inter Service Comms</h3>
+<h3><a name="Inter-Service-Comms" id="Inter-Service-Comms">Inter Service Comms</a></h3>
 <p>So the service fabric also allows you to open up ports to the outside world. 
 Now this may not be something you need to do at all, for example your service 
 could get work via polling a database table, reading a queue, or getting sent a 
@@ -396,13 +475,11 @@ method. You can read more about this here : <a href="https://aka.ms/servicefabri
 https://aka.ms/servicefabricservicecommunication</a>&nbsp;</p>
 <pre lang="cs">
 protected override IEnumerable&lt;ServiceReplicaListener&gt; CreateServiceReplicaListeners()</pre>
-<pre lang="cs">
-&nbsp;</pre>
 <p>To get a better understanding of this method, you could create a ASP .Net 
 Core service fabric example that would fill this method in for you, so you could 
 better understand it. For the code in this demo its just not relevant.</p>
 <p>&nbsp;</p>
-<h3>Where Do I Put My Code To Do Stuff?</h3>
+<h3><a name="Where-Do-I-Put-My-Code-To-Do-Stuff?" id="Where-Do-I-Put-My-Code-To-Do-Stuff?">Where Do I Put My Code To Do Stuff?</a></h3>
 <p>So you might now be wondering where do I put my own code? This is a simple 
 question to answer. You simply fill in this method. You MUST observe the 
 CancellationToken, if you do not the platform will boot your services down in 
@@ -412,7 +489,7 @@ to shutdown gracefully.</p>
 protected override async Task RunAsync(CancellationToken cancellationToken)
 </pre>
 <p>&nbsp;</p>
-<h3>Importance Of Correct Configuration</h3>
+<h3><a name="Importance-Of-Correct-Configuration" id="Importance-Of-Correct-Configuration">Importance Of Correct Configuration</a></h3>
 <p>To run the Service Fabric you MUST ensure that it runs with <strong>x64 as 
 the platform</strong>. An example is shown below for the code that accompanies 
 this article</p>
@@ -420,10 +497,10 @@ this article</p>
 <p><a href="configBig.png" target="_blank"><img alt="" height="444" src="configSmall.png" width="640"></a></p>
 <p><em>CLICK FOR BIGGER IMAGE</em></p>
 <p>&nbsp;</p>
-<h3>Deployment/Publish Profiles</h3>
+<h3><a name="Deployment/Publish-Profiles" id="Deployment/Publish-Profiles">Deployment/Publish Profiles</a></h3>
 <p>The Service Fabric builds apon previous Azure successes, and Publish profiles 
 are one such success. These are a simple idea, where we have a profile matched 
-with a deployment that specifies the requirments needed for THAT deployments via 
+with a deployment that specifies the requirements needed for THAT deployments via 
 some dedicated config.</p>
 <p>&nbsp;</p>
 <p>Here is an example of publish profile file</p>
@@ -483,7 +560,7 @@ to a real cluster you can do that from Visual Studio. In which case steps are</p
 	file to use</li>
 </ol>
 <p>&nbsp;</p>
-<h3>The Cluster Manager</h3>
+<h3><a name="The-Cluster-Manager" id="The-Cluster-Manager">The Cluster Manager</a></h3>
 <p>As I stated in the introductory section of this article the Azure Service 
 Fabric comes with a rather nice cluster manager (which I have to say looks like 
 it stole a lot of inspiration from the DataStax Cassandra cluster manager). This 
@@ -497,10 +574,10 @@ are running the cluster locally from Visual Studio.</p>
 	<li>Start a node </li>
 	<li>Stop a node (useful for testing failure code)</li>
 	<li>See what artifacts are deployed</li>
-	<li>Examine the configution that was used for a particular deployment</li>
+	<li>Examine the configuration that was used for a particular deployment</li>
 </ul>
 <p>&nbsp;</p>
-<p>As I say if running locally you can acess this from the system tray icon, 
+<p>As I say if running locally you can access this from the system tray icon, 
 otherwise just grab the url from the Azure portal</p>
 <p><img alt="" height="110" src="systray.png" width="320"></p>
 <p>&nbsp;</p>
@@ -515,7 +592,7 @@ setup or the Azure portal)&nbsp;</p>
 <p><em>CLICK FOR BIGGER IMAGE</em></p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h1>The Demo Code</h1>
+<h1><a name="The-Demo-Code" id="The-Demo-Code">The Demo Code</a></h1>
 <p>So what exactly does the demo code do?</p>
 <p>Ok now that we have covered the basics of what the fabric is, and looked at 
 what a new project might look like and what methods we have, it's time to now 
@@ -533,7 +610,7 @@ do all the normal stuff like:</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>Bringing IOC Into The Fold</h2>
+<h2><a name="Bringing-IOC-Into-The-Fold" id="Bringing-IOC-Into-The-Fold">Bringing IOC Into The Fold</a></h2>
 <p>Like it or not, IOC/DI does play a part in providing a good separation of 
 concerns, and allows for more testable pluggable code. To that end it is a good 
 idea to apply IOC/DI to your own service fabric services. </p>
@@ -544,24 +621,22 @@ I had used the most, which for me was <strong>Autofac</strong> (<a href="https:/
 <p>The service fabric support is not part of the main <strong>Autofac</strong> 
 code base, but can be found here :
 <a href="https://github.com/autofac/Autofac.ServiceFabric">
-https://github.com/autofac/Autofac.ServiceFabric</a> with insrtuctions on use 
+https://github.com/autofac/Autofac.ServiceFabric</a> with instructions on use 
 here :
 <a href="https://alexmg.com/posts/introducing-the-autofac-integration-for-service-fabric">
 https://alexmg.com/posts/introducing-the-autofac-integration-for-service-fabric</a></p>
 <p>&nbsp;</p>
 <p>You could probably apply the code found here :
 <a href="https://github.com/autofac/Autofac.ServiceFabric">
-https://github.com/autofac/Autofac.ServiceFabric</a>&nbsp; to your favourite 
+https://github.com/autofac/Autofac.ServiceFabric</a>&nbsp; to your favorite 
 container, but for me I am happy enough to just use <strong>Autofac</strong>, so 
 lets see how to use it.</p>
 <p>&nbsp;</p>
 <p>So it starts by including these 2 Nuget packages (these will bring in the 
-other transative dependencies you need)</p>
+other transitive dependencies you need)</p>
 <pre lang="xml">
 &lt;package id="Autofac" version="4.6.2" targetFramework="net461" /&gt;
 &lt;package id="Autofac.ServiceFabric" version="1.0.0" targetFramework="net462" /&gt;</pre>
-<pre lang="xml">
-&nbsp;</pre>
 <p>After you have that you will need build the <strong>Autofac</strong> container, and register the types you want, and also use the 
 <code>RegisterServiceFabricSupport()</code> extension method</p>
 <p>&nbsp;</p>
@@ -630,7 +705,7 @@ namespace Stateless1
 <p><strong>NOTE:</strong> It is very important that you use the name of the service from the&nbsp; <code>ApplicationPackageRoot\ApplicationManifest</code> when 
 you register the services using <strong>Autofac</strong>, this allows the dynamic proxy that 
 <strong>Autofac</strong> will build to find the correct type/version of the service to create</p>
-<pre>Here is the relevant code for this demo service thathas dependencies that need satisfying</pre>
+<p>Here is the relevant code for this demo service thathas dependencies that need satisfying</p>
 <pre lang="cs">
 using System;
 using System.Collections.Generic;
@@ -742,17 +817,17 @@ namespace Stateless1
 code you get when creating a new Service Fabric app in Visual Studio. So how do our required services get started?</p>
 <p>Well like I said above the line where you register your required services in the 
 <strong>Autofac</strong> module uses the special string values from
-the <strong>Application/ApplicationManifest.xml</strong>. So AutoFac takes care of bringing up those instances, which keeps the deployment happy</p>
+the <strong>Application/ApplicationManifest.xml</strong>. So Autofac takes care of bringing up those instances, which keeps the deployment happy</p>
 <p>&nbsp;</p>
 <p>And that is all there is to the IOC side of things with Autofac. Like I say 
-if you have some other favourite IOC container you may have to see if it 
+if you have some other favorite IOC container you may have to see if it 
 supports the service fabric, if not you may have to dig about in here :
 <a href="https://github.com/autofac/Autofac.ServiceFabric">
 https://github.com/autofac/Autofac.ServiceFabric</a> to see if you can apply the 
 same techniques to your container of choice </p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>Some Better Logging : Serilog/Seq</h2>
+<h2><a name="Some-Better-Logging-:-Serilog/Seq" id="Some-Better-Logging-:-Serilog/Seq">Some Better Logging : Serilog/Seq</a></h2>
 <p>Ah logging, now what can you say you need to be able to log stuff right. Out 
 of the box the Service Fabric template comes with this diagnostics writer (I 
 have left that in the demo code for this article so you can see it), called 
@@ -760,7 +835,7 @@ have left that in the demo code for this article so you can see it), called
 log. Fair enough, but a bit crude for my taste.</p>
 <p>There are many logging choices out there, but I do like the
 <a href="https://serilog.net/" target="_blank">Serilog</a>/<a href="https://getseq.net/" target="_blank">Seq</a> 
-combination. I like Serilog cos it has lots of Sinks and Iike the concept of 
+combination. I like Serilog cos it has lots of Sinks and like the concept of 
 enrichers and it is a fully structured text logger, which is ace. I like Seq as 
 it offers me a nice searchable web front end with pretty much 1 line of extra 
 code.</p>
@@ -788,7 +863,7 @@ code.</p>
 cluster of VMs), wouldn't it be nice if we could include the node that things 
 were happening on in our log messages? I think so. How can we do that</p>
 <p>&nbsp;</p>
-<h3>Enrichers</h3>
+<h3><a name="Enrichers" id="Enrichers">Enrichers</a></h3>
 <p>Seq does allow you to supply runtime logging properties via things called 
 "Enrichers" (see <a href="https://github.com/serilog/serilog/wiki/Enrichment">
 https://github.com/serilog/serilog/wiki/Enrichment</a>). We can use these to add 
@@ -1043,7 +1118,7 @@ namespace Stateless1
     }
 }
 </pre>
-<p>Now there is some funky code in tere that deals with getting values out of the many layers of service fabric config files. 
+<p>Now there is some funky code in there that deals with getting values out of the many layers of service fabric config files. 
 This is something we will be getting into below. </p>
 <p>For now just understand that you may want "Verbose" in dev environment, and 
 "Error" in production environment, which as stated right at the start of this 
@@ -1055,10 +1130,161 @@ config location to match the specified environment, but as I say more on this
 later.</p>
 <p>&nbsp;</p>
 
-<h2>Getting To Know The New Config System</h2>
-<p class="auto-style2">NEED TO DO THIS PART</p>
+<h2><a name="Getting-To-Know-The-New-Config-System" id="Getting-To-Know-The-New-Config-System">Getting To Know The New Config System</a></h2>
+<p>So we have seen several parts of this already above, we have seen that each 
+Service within the Azure Service Fabric can have its own <code>settings.xml</code> 
+file, and that these service(s) are owned by a overall application that has its 
+own <code>ApplicationManifest.xml</code> file. So how do the parameters for the 
+services work, can we provide parameters to them. Well yes we can.</p>
+<p>The following diagram should illustrate the workflow I hope</p>
+<p><img alt="" height="763" src="overrides.png" width="630"></p>
+<p>Lets have a look at these from top to bottom, as stated above it starts when 
+you choose a publish profile file, which we looked at above but here is one 
+anyway to remind you</p>
+<pre lang="xml">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;PublishProfile xmlns="http://schemas.microsoft.com/2015/05/fabrictools"&gt;
+  &lt;ClusterConnectionParameters ConnectionEndpoint=""XXXXX.canadacentral.cloudapp.azure.com:19000 /&gt;
+  &lt;ApplicationParameterFile Path="..\ApplicationParameters\Cloud.xml" /&gt;
+  &lt;CopyPackageParameters CompressPackage="true" /&gt;
+&lt;/PublishProfile&gt;</pre>
+<p>This specifies which parameter file to use. In this case <code>ApplicationParameters\Cloud.xml</code> which looks like this</p>
+<pre lang="cs">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;Application xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	Name="fabric:/SimpleStatelessServiceFabricDemo" 
+	xmlns="http://schemas.microsoft.com/2011/01/fabric"&gt;
+  &lt;Parameters&gt;
+    &lt;Parameter Name="Stateless1_InstanceCount" Value="-1" /&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:EnvironmentName" 
+               Value="Cloud" /&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:serilog:write-to:Seq.restrictedToMinimumLevel" 
+               Value="Information" /&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:serilog:write-to:Seq.serverUrl" 
+               Value="http://localhost:5341" /&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:UseServiceFabricEnhancements" 
+               Value="true" /&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:SomeSafeKey"
+               Value="fdfdfdd" /&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:CertThumbPrint" 
+               Value="ad0665f13101c6258cbfae6e091c3f3155fe50d0" /&gt;
+  &lt;/Parameters&gt;
+&lt;/Application&gt;
+</pre>
+<p>See how it simply provides parameters. These will then feed into the main <code>ApplicationManifest.xml</code>. Lets see that now</p>
+<pre lang="xml">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	ApplicationTypeName="SimpleStatelessServiceFabricDemoType" A
+	pplicationTypeVersion="1.0.0" 
+	xmlns="http://schemas.microsoft.com/2011/01/fabric"&gt;
+  
+  &lt;Parameters&gt;
+    &lt;Parameter Name="Stateless1_InstanceCount" 
+		DefaultValue="-1" /&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:EnvironmentName" 
+		DefaultValue="dev90" /&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:serilog:write-to:Seq.restrictedToMinimumLevel" 
+		DefaultValue="" /&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:serilog:write-to:Seq.serverUrl" 
+		DefaultValue="" /&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:UseServiceFabricEnhancements" 
+		DefaultValue="false" /&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:SomeSafeKey" 
+		DefaultValue="" /&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:CertThumbPrint" 
+		DefaultValue="" /&gt;
+  &lt;/Parameters&gt;
+  
+  &lt;!-- Import the ServiceManifest from the ServicePackage. The ServiceManifestName and ServiceManifestVersion 
+       should match the Name and Version attributes of the ServiceManifest element defined in the 
+       ServiceManifest.xml file. --&gt;
+  &lt;ServiceManifestImport&gt;
+    &lt;ServiceManifestRef ServiceManifestName="Stateless1Pkg" ServiceManifestVersion="1.0.0" /&gt;
+    &lt;ConfigOverrides&gt;
+      &lt;ConfigOverride Name="Config"&gt;
+        &lt;Settings&gt;
+          &lt;Section Name="appSettings"&gt;
+            &lt;Parameter Name="simpleStatelessServiceFabricDemo:EnvironmentName" 
+				Value="[simpleStatelessServiceFabricDemo:EnvironmentName]" /&gt;
+            &lt;Parameter Name="simpleStatelessServiceFabricDemo:serilog:write-to:Seq.restrictedToMinimumLevel" 
+				Value="[simpleStatelessServiceFabricDemo:serilog:write-to:Seq.restrictedToMinimumLevel]" /&gt;
+            &lt;Parameter Name="simpleStatelessServiceFabricDemo:serilog:write-to:Seq.serverUrl" 
+				Value="[simpleStatelessServiceFabricDemo:serilog:write-to:Seq.serverUrl]" /&gt;
+            &lt;Parameter Name="simpleStatelessServiceFabricDemo:UseServiceFabricEnhancements" 
+				Value="[simpleStatelessServiceFabricDemo:UseServiceFabricEnhancements]" /&gt;
+          &lt;/Section&gt;
+          &lt;Section Name="encryptedSettings"&gt;
+            &lt;Parameter Name="simpleStatelessServiceFabricDemo:SomeSafeKey" 
+                       Value="[simpleStatelessServiceFabricDemo:SomeSafeKey]" 
+                       IsEncrypted="true" /&gt;
+          &lt;/Section&gt;
+        &lt;/Settings&gt;
+      &lt;/ConfigOverride&gt;
+    &lt;/ConfigOverrides&gt;
+  &lt;/ServiceManifestImport&gt;
+  ....
+  ....
+  ....
+  ....
+  
+&lt;/ApplicationManifest&gt;
+</pre>
+<p>There are a few points to note here</p>
+<ul>
+	<li>That we have a parameters section here</li>
+	<li>That we import stuff from the actual service file by using this line
+	<code>ServiceManifestName="Stateless1Pkg" ServiceManifestVersion="1.0.0"</code></li>
+	<li>That we override the parameters from the lower level Service. If there 
+	were more than 1 service in this application, we would expect to see more 
+	than one of these import/override sections (if parameters were needed for 
+	each service that is)</li>
+	<li>The parameters are actually used as substitutions for the override. The 
+	syntax for this is simply the name of the parameter in square braces, an 
+	example being <code>[simpleStatelessServiceFabricDemo:SomeSafeKey]</code> 
+	say</li>
+</ul>
+
 <p>&nbsp;</p>
-<h2>Lets Keep Those Details Safe</h2>
+<p>ok so now that we have seen how the parameters come in, and get overriden at 
+the top level, we are nearly done and just need to examine how the very bottom 
+layer (the actual service) declares the parameters to begin with. This is done 
+per service in a <code>Settings.xml</code> file. Here is the demo apps one:</p>
+<pre lang="xml">
+&lt;?xml version="1.0" encoding="utf-8" ?&gt;
+&lt;Settings xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+          xmlns="http://schemas.microsoft.com/2011/01/fabric"&gt;
+  &lt;!-- Add your custom configuration sections and parameters here --&gt;
+  &lt;Section Name="appSettings"&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:EnvironmentName" 
+               Value="" MustOverride="true" 
+               IsEncrypted="false"/&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:serilog:write-to:Seq.restrictedToMinimumLevel" 
+               Value="" MustOverride="true" 
+               IsEncrypted="false"/&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:serilog:write-to:Seq.serverUrl" 
+               Value="" 
+               MustOverride="true" 
+               IsEncrypted="false"/&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:UseServiceFabricEnhancements" 
+               Value="" 
+               MustOverride="true" 
+               IsEncrypted="false"/&gt;
+  &lt;/Section&gt;
+  &lt;Section Name="encryptedSettings"&gt;
+    &lt;Parameter Name="simpleStatelessServiceFabricDemo:SomeSafeKey" 
+               Value="" 
+               MustOverride="false" 
+               IsEncrypted="true"/&gt;
+  &lt;/Section&gt;
+&lt;/Settings&gt;
+</pre>
+<p>And thats really how the new config system hangs together.</p>
+
+<h2><a name="Lets-Keep-Those-Details-Safe" id="Lets-Keep-Those-Details-Safe">Lets Keep Those Details Safe</a></h2>
 <p>Ok so we have seen that we can have encrypted/non-encrypted parameters. It is 
 probably a good idea to encrypt the connection strings (in my opinion). This 
 article is a MUST read as this is what we will be doing next</p>
@@ -1081,7 +1307,7 @@ and just change them back just before I check in. But it's your call.</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h3>Creating A Self Sign Cert</h3>
+<h3><a name="Creating-A-Self-Sign-Cert" id="Creating-A-Self-Sign-Cert">Creating A Self Sign Cert</a></h3>
 <p>A data encipherment certificate is used strictly for encryption and 
 decryption of configuration values in a service&#39;s Settings.xml and is not used 
 for authentication or signing of cipher text. The certificate must meet the 
@@ -1094,7 +1320,7 @@ following requirements:</p>
 	should not include Server Authentication or Client Authentication.</li>
 </ul>
 <p>You can create a self sign certificate to test stuff out, though for a proper 
-production release you should use KeyVault/Powershell ot create the certificates 
+production release you should use KeyVault/PowerShell to create the certificates 
 in the portal, and then download them as a .pfx file and install them in the<strong> 
 local machine store</strong>.</p>
 <p>For now though lets create a new cipher certificate to test with. This can be 
@@ -1116,28 +1342,29 @@ certificate created at same time as the PowerShell command was run above</p>
 <p><a href="cert4Big.png" target="_blank"><img alt="" height="120" src="cert4SMall.png" width="630"></a></p>
 <p><em>CLICK FOR BIGGER IMAGE</em></p>
 <p>&nbsp;</p>
-<h3>The Importance Of Powershell (current/latest versions)</h3>
-<p>We had an issue at work where we were using Powershell to create the 
+<h3><a name="The-Importance-Of-Powershell-(current/latest-versions)" id="The-Importance-Of-Powershell-(current/latest-versions)">The Importance Of Powershell (current/latest versions)</a></h3>
+<p>We had an issue at work where we were using PowerShell to create the 
 encryption certificates, and we would always get some weird "ACL certificate" 
 exception. This turned out to be due to an older version of the Azure PowerShell 
 encryption module being used. So make sure you have the latest module in use</p>
 <p>&nbsp;</p>
-<h3>Installing The Self Sign Cert</h3>
+<h3><a name="Installing-The-Self-Sign-Cert" id="Installing-The-Self-Sign-Cert">Installing The Self Sign Cert</a></h3>
 <p>Ok so lets say you did things for a production setup, or non playground 
 experiment, and you have the .pfx file (remember the type MUST be 
-&quot;DocumentEncryptionCert&quot;) you wil need to install that into the <strong>local machine store</strong>. 
+&quot;DocumentEncryptionCert&quot;) you will need to install that into the <strong>local machine store</strong>. 
 This can be done as follows. Please bear in mind that a proper environment (non 
 self signed certificate) should be password protected.</p>
 <p><img alt="" height="246" src="cert5.png" width="458"></p>
 <p>&nbsp;</p>
-<h3>Using The Self Sign Cert</h3>
+<h3><a name="Using-The-Self-Sign-Cert" id="Using-The-Self-Sign-Cert">Using The Self Sign Cert</a></h3>
 <p>So now that we have seen the nice new shiny config system described above, 
 how do we make sure our connection strings are nice and safe? There are a couple 
 of steps to make this happen.</p>
 <p>&nbsp;</p>
-<h4>Step 1 : Grab the certificate thumbprint</h4>
-<p>The easiest way it to grab the thumbprint from the Azure KeyVault portal if 
-you went that way (which you should). However if you have the cerificate 
+<h4><a name="Step-1-:-Grab-the-certificate-thumbprint" id="Step-1-:-Grab-the-certificate-thumbprint">Step 1 : Grab the certificate thumbprint</a></h4>
+<p>The easiest way it to grab the thumbprint from the <strong>Azure KeyVault portal 
+blade</strong> if 
+you went that way (which you should). However if you have the certificate 
 installed into the local machine store, you can grab the thumbprint as follows</p>
 <p><img alt="" height="552" src="cert6.png" width="630"></p>
 <p>Copy the value from the thumbprint area. There is a bug with this dialog 
@@ -1147,9 +1374,9 @@ and remove the special character and spaces, then keep final string safe</p>
 <p><img alt="" height="42" src="cert7.png" width="630"></p>
 <p>So for this example we would end up with final thumbprint value of <code>
 b92961f2fd7ad32d8f3b1a83b216e79f296857af</code></p>
-<h4>Step 2 : Use the certificate thumbprint in the ApplicationManifest.xml</h4>
+<h4><a name="Step-2-:-Use-the-certificate-thumbprint-in-the-ApplicationManifest.xml" id="Step-2-:-Use-the-certificate-thumbprint-in-the-ApplicationManifest.xml">Step 2 : Use the certificate thumbprint in the ApplicationManifest.xml</a></h4>
 <p>You will now need to use the thumbprint from step 1 above to add to the 
-ApplicationManifest.xml (remember this certificate WILL need to be available on 
+<code>ApplicationManifest.xml</code> (remember this certificate WILL need to be available on 
 all node VMs in the cluster)</p>
 <pre lang="xml">
 &lt;?xml version="1.0" encoding="utf-8"?&gt;
@@ -1179,19 +1406,19 @@ example of one that I updated with the thumbprint</p>
 <p>The advantage of using a parameter file for this rather than hardcode it in
 <code>ApplicationManifest.xml</code> is that you can have a different one per 
 environment should you wish to.</p>
-<h4>&nbsp;</h4>
-<h4>Step 3 : Make sure the parameters you wish to use are encrypted</h4>
+<p><a name="&nbsp;" id="&nbsp;">&nbsp;</a></p>
+<h4><a name="Step-3-:-Make-sure-the-parameters-you-wish-to-use-are-encrypted" id="Step-3-:-Make-sure-the-parameters-you-wish-to-use-are-encrypted">Step 3 : Make sure the parameters you wish to use are encrypted</a></h4>
 <p>Ok so now we need to make sure the parameters you want to encrypt are 
-actually specified as IsEncrypted=&quot;true&quot;. We do this in both the <code>
-ApplicationManifest.xml</code> and and <code>Setting.xml</code> that the 
-ApplicationManifest.xml parameters override.</p>
+actually specified as <code>IsEncrypted=&quot;true&quot;</code>. We do this in both the <code>
+ApplicationManifest.xml</code> and <code>Setting.xml</code> that the 
+<code>ApplicationManifest.xml</code> parameters override.</p>
 <p>&nbsp;</p>
 <p><strong>ApplicationManifest.xml</strong></p>
 <p><img alt="" height="381" src="enc1.png" width="630"></p>
 <p><strong>Example service Settings.xml</strong></p>
 <p><img alt="" height="316" src="enc2.png" width="583"></p>
 <p>&nbsp;</p>
-<h4>Step 4 : Encrypt the values</h4>
+<h4><a name="Step-4-:-Encrypt-the-values" id="Step-4-:-Encrypt-the-values">Step 4 : Encrypt the values</a></h4>
 <p>Now we need to encrypt the values using the certificate that has been used. I 
 have provided a little PowerShell script in the code that you can use <code>
 Encrypt-Secret.ps1</code> which you simply call from powershell like this</p>
@@ -1199,16 +1426,15 @@ Encrypt-Secret.ps1</code> which you simply call from powershell like this</p>
 <p>The result will be something like this</p>
 <p><img alt="" height="178" src="enc3.png" width="630"></p>
 <p>Now copy all the text inside the &lt;START ENCRYPTED TEXT&gt; to &lt;END ENCRYPTED 
-TEXT&gt; and make sure its all one one line with no spaces. Then we need to copy it 
+TEXT&gt; and make sure its all one <span lang="x-none"></span>line with no spaces. Then we need to copy it 
 to the relevant parameter file. Here is an example of where an encrypted 
 parameter value may go</p>
 <p><img alt="" height="196" src="enc5.png" width="630"></p>
-<h4>Step 5 : Decrypt the values</h4>
+<h4><a name="Step-5-:-Decrypt-the-values" id="Step-5-:-Decrypt-the-values">Step 5 : Decrypt the values</a></h4>
 <p>Ok so now we just need to unencrypt the values. How do we do that?</p>
-<p>Well this is what I came up with. For me I am using a <code>
-ServiceConfiguration </code>class that looks like this to store all my settings. 
+<p>Well this is what I came up with. For me I am using a <code>ServiceConfiguration </code>class that looks like this to store all my settings. 
 So I need to update this one with the unencrypted values at startup.</p>
-<p>Here is my <code>ServiceConfiguration </code>property bag kind of class </p>
+<p>Here is my <code>ServiceConfiguration</code> property bag kind of class </p>
 <pre lang="cs">
 using System;
 using System.Collections.Generic;
@@ -1233,7 +1459,7 @@ namespace Stateless1
     }
 }
 </pre>
-<p>So all that's left is to get the unencrypted values to puit into this helper class. Here is how I do that</p>
+<p>So all that's left is to get the unencrypted values to put into this helper class. Here is how I do that</p>
 <pre lang="cs">
 namespace Stateless1
 {
@@ -1300,7 +1526,7 @@ namespace Stateless1
     }
 }
 </pre>
-<h3>What About Real Life Cluster?</h3>
+<h3><a name="What-About-Real-Life-Cluster?" id="What-About-Real-Life-Cluster?">What About Real Life Cluster?</a></h3>
 <p>Yes so far we have been talking about testing a local cluster, that is one 
 running locally on your own box. So for a real cluster you will need to get 
 remote access to the actual nodes that form the real cluster (as created in 
@@ -1308,7 +1534,7 @@ Portal/PowerShell) and install the certificate on those VMs as described in
 steps above.</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h1>Conclusion</h1>
+<h1><a name="Conclusion" id="Conclusion">Conclusion</a></h1>
 <p>We are using the Azure Service Fabric a fair bit, and it has not let us down 
 so far. We mainly use it for siloed micro services that don't interact with each 
 other that much, so we have not really needed to open any ports. However the 
