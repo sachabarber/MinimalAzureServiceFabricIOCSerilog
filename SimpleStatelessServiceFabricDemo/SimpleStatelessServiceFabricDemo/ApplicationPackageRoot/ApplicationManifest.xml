@@ -24,7 +24,9 @@
             <Parameter Name="simpleStatelessServiceFabricDemo:UseServiceFabricEnhancements" Value="[simpleStatelessServiceFabricDemo:UseServiceFabricEnhancements]" />
           </Section>
           <Section Name="encryptedSettings">
-            <Parameter Name="simpleStatelessServiceFabricDemo:SomeSafeKey" Value="[simpleStatelessServiceFabricDemo:SomeSafeKey]" IsEncrypted="true" />
+            <Parameter Name="simpleStatelessServiceFabricDemo:SomeSafeKey" 
+                       Value="[simpleStatelessServiceFabricDemo:SomeSafeKey]" 
+                       IsEncrypted="true" />
           </Section>
         </Settings>
       </ConfigOverride>
@@ -53,6 +55,6 @@
     </SecurityAccessPolicies>
   </Policies>
   <Certificates>
-    <SecretsCertificate X509FindValue="[simpleStatelessServiceFabricDemo:CertThumbPrint]" Name="EnvCipherCert" />
+    <SecretsCertificate X509FindValue="[simpleStatelessServiceFabricDemo:CertThumbPrint]" Name="EnvCipherCert" X509FindType="FindByThumbprint" />
   </Certificates>
 </ApplicationManifest>

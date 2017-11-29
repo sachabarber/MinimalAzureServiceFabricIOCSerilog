@@ -36,7 +36,7 @@ enterprise-class, tier-1, cloud-scale applications running in containers.</em></
 <p><em><br>This short video introduces Service Fabric and microservices:</em></p>
 <p><a href="https://channel9.msdn.com/Blogs/Azure/Azure-Service-Fabric" target="_blank">
 <em>
-<img alt="" height="597" src="overviewvid.png" width="1165"></em></a></p>
+<img alt="" height="300" src="overviewvid.png" width="630"></em></a></p>
 <p class="auto-style1"><em></em></p>
 <h2>Applications Composed Of Microservices</h2>
 <p><em>ervice Fabric enables you to build and manage scalable and reliable 
@@ -166,7 +166,7 @@ give a 1 line strap lines for each of them</p>
 techniques would apply to other types of services shown above fairly well.</p>
 <p>&nbsp;</p>
 <p>When you create a new Service Fabric app, you will see something like this</p>
-<p><img alt="" height="1124" src="projects.png" width="608"></p>
+<p><img alt="" height="550" src="projects.png" width="304"></p>
 <p>&nbsp;</p>
 <p>There are 2 distinct things at play here</p>
 <p>&nbsp;</p>
@@ -502,7 +502,7 @@ are running the cluster locally from Visual Studio.</p>
 <p>&nbsp;</p>
 <p>As I say if running locally you can acess this from the system tray icon, 
 otherwise just grab the url from the Azure portal</p>
-<p><img alt="" height="238" src="systray.png" width="640"></p>
+<p><img alt="" height="110" src="systray.png" width="320"></p>
 <p>&nbsp;</p>
 <p>Right click that icon, and choose "Manage local cluster" to see the Fabric 
 explorer. This is available at a url of this form (get the correct url from your own 
@@ -1082,21 +1082,224 @@ and just change them back just before I check in. But it's your call.</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h3>Creating A Self Sign Cert</h3>
-<p class="auto-style2">NEED TO DO THIS PART</p>
+<p>A data encipherment certificate is used strictly for encryption and 
+decryption of configuration values in a service&#39;s Settings.xml and is not used 
+for authentication or signing of cipher text. The certificate must meet the 
+following requirements:</p>
+<ul>
+	<li>The certificate must contain a private key.</li>
+	<li>The certificate must be created for key exchange, exportable to a 
+	Personal Information Exchange (.pfx) file.</li>
+	<li>The certificate key usage must include Data Encipherment (10), and 
+	should not include Server Authentication or Client Authentication.</li>
+</ul>
+<p>You can create a self sign certificate to test stuff out, though for a proper 
+production release you should use KeyVault/Powershell ot create the certificates 
+in the portal, and then download them as a .pfx file and install them in the<strong> 
+local machine store</strong>.</p>
+<p>For now though lets create a new cipher certificate to test with. This can be 
+done with the following PowerShell command</p>
+<pre>
+New-SelfSignedCertificate -Type DocumentEncryptionCert -KeyUsage DataEncipherment -Subject mydataenciphermentcert -Provider 'Microsoft Enhanced Cryptographic Provider v1.0'
+</pre>
+<p>If you run this in PowerShell and it will install a new certificate in the 
+your <strong>local machine store</strong>. This is shown here</p>
+<p><img alt="" height="120" src="cert1.png" width="630"></p>
+<p>To clarify this has been installed you can open the <strong>local machine store</strong>.</p>
+<p>To do this (I am using Windows 10 so instructions may vary)</p>
+<p>Click on the windows icon</p>
+<p><img alt="" height="199" src="cert2.png" width="268"></p>
+<p>Then start typing &quot;<strong>cert</strong>&quot; and you will see the following</p>
+<p><img alt="" height="267" src="cert3.png" width="399"></p>
+<p>click that, then navigate to the following location you should see a new 
+certificate created at same time as the PowerShell command was run above</p>
+<p><a href="cert4Big.png" target="_blank"><img alt="" height="120" src="cert4SMall.png" width="630"></a></p>
+<p><em>CLICK FOR BIGGER IMAGE</em></p>
 <p>&nbsp;</p>
-&nbsp;<h3>The Importance Of Powershell (current/latest versions)</h3>
+<h3>The Importance Of Powershell (current/latest versions)</h3>
 <p>We had an issue at work where we were using Powershell to create the 
 encryption certificates, and we would always get some weird "ACL certificate" 
 exception. This turned out to be due to an older version of the Azure PowerShell 
 encryption module being used. So make sure you have the latest module in use</p>
 <p>&nbsp;</p>
 <h3>Installing The Self Sign Cert</h3>
-<p class="auto-style2">NEED TO DO THIS PART</p>
-<p>&nbsp;</p>
+<p>Ok so lets say you did things for a production setup, or non playground 
+experiment, and you have the .pfx file (remember the type MUST be 
+&quot;DocumentEncryptionCert&quot;) you wil need to install that into the <strong>local machine store</strong>. 
+This can be done as follows. Please bear in mind that a proper environment (non 
+self signed certificate) should be password protected.</p>
+<p><img alt="" height="246" src="cert5.png" width="458"></p>
 <p>&nbsp;</p>
 <h3>Using The Self Sign Cert</h3>
-<p class="auto-style2">NEED TO DO THIS PART</p>
+<p>So now that we have seen the nice new shiny config system described above, 
+how do we make sure our connection strings are nice and safe? There are a couple 
+of steps to make this happen.</p>
 <p>&nbsp;</p>
+<h4>Step 1 : Grab the certificate thumbprint</h4>
+<p>The easiest way it to grab the thumbprint from the Azure KeyVault portal if 
+you went that way (which you should). However if you have the cerificate 
+installed into the local machine store, you can grab the thumbprint as follows</p>
+<p><img alt="" height="552" src="cert6.png" width="630"></p>
+<p>Copy the value from the thumbprint area. There is a bug with this dialog 
+though, and a hidden character exists at the beginning of the thumbprint. The 
+best way to see that is just copy the text and paste it into PowerShell window, 
+and remove the special character and spaces, then keep final string safe</p>
+<p><img alt="" height="42" src="cert7.png" width="630"></p>
+<p>So for this example we would end up with final thumbprint value of <code>
+b92961f2fd7ad32d8f3b1a83b216e79f296857af</code></p>
+<h4>Step 2 : Use the certificate thumbprint in the ApplicationManifest.xml</h4>
+<p>You will now need to use the thumbprint from step 1 above to add to the 
+ApplicationManifest.xml (remember this certificate WILL need to be available on 
+all node VMs in the cluster)</p>
+<pre lang="xml">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="SimpleStatelessServiceFabricDemoType" ApplicationTypeVersion="1.0.0" xmlns="http://schemas.microsoft.com/2011/01/fabric"&gt;
+  .....
+  .....
+  .....
+  
+  &lt;Principals&gt;
+    &lt;Users&gt;
+      &lt;User Name="SfUser" AccountType="NetworkService" /&gt;
+    &lt;/Users&gt;
+  &lt;/Principals&gt;
+  &lt;Policies&gt;
+    &lt;SecurityAccessPolicies&gt;
+      &lt;SecurityAccessPolicy ResourceRef="EnvCipherCert" PrincipalRef="SfUser" ResourceType="Certificate" /&gt;
+    &lt;/SecurityAccessPolicies&gt;
+  &lt;/Policies&gt;
+  &lt;Certificates&gt;
+    &lt;SecretsCertificate X509FindValue="[simpleStatelessServiceFabricDemo:CertThumbPrint]" Name="EnvCipherCert" X509FindType="FindByThumbprint" /&gt;
+  &lt;/Certificates&gt;
+&lt;/ApplicationManifest&gt;
+</pre>
+<p>Now make sure you have updated the relevant Parameters file. Here is an 
+example of one that I updated with the thumbprint</p>
+<p><img alt="" height="289" src="enc4.png" width="583"></p>
+<p>The advantage of using a parameter file for this rather than hardcode it in
+<code>ApplicationManifest.xml</code> is that you can have a different one per 
+environment should you wish to.</p>
+<h4>&nbsp;</h4>
+<h4>Step 3 : Make sure the parameters you wish to use are encrypted</h4>
+<p>Ok so now we need to make sure the parameters you want to encrypt are 
+actually specified as IsEncrypted=&quot;true&quot;. We do this in both the <code>
+ApplicationManifest.xml</code> and and <code>Setting.xml</code> that the 
+ApplicationManifest.xml parameters override.</p>
+<p>&nbsp;</p>
+<p><strong>ApplicationManifest.xml</strong></p>
+<p><img alt="" height="381" src="enc1.png" width="630"></p>
+<p><strong>Example service Settings.xml</strong></p>
+<p><img alt="" height="316" src="enc2.png" width="583"></p>
+<p>&nbsp;</p>
+<h4>Step 4 : Encrypt the values</h4>
+<p>Now we need to encrypt the values using the certificate that has been used. I 
+have provided a little PowerShell script in the code that you can use <code>
+Encrypt-Secret.ps1</code> which you simply call from powershell like this</p>
+<pre>.\Encrypt-Secret.ps1 "b92961f2fd7ad32d8f3b1a83b216e79f296857af" "I want this text encrypted"</pre>
+<p>The result will be something like this</p>
+<p><img alt="" height="178" src="enc3.png" width="630"></p>
+<p>Now copy all the text inside the &lt;START ENCRYPTED TEXT&gt; to &lt;END ENCRYPTED 
+TEXT&gt; and make sure its all one one line with no spaces. Then we need to copy it 
+to the relevant parameter file. Here is an example of where an encrypted 
+parameter value may go</p>
+<p><img alt="" height="196" src="enc5.png" width="630"></p>
+<h4>Step 5 : Decrypt the values</h4>
+<p>Ok so now we just need to unencrypt the values. How do we do that?</p>
+<p>Well this is what I came up with. For me I am using a <code>
+ServiceConfiguration </code>class that looks like this to store all my settings. 
+So I need to update this one with the unencrypted values at startup.</p>
+<p>Here is my <code>ServiceConfiguration </code>property bag kind of class </p>
+<pre lang="cs">
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Stateless1
+{
+    public class ServiceConfiguration
+    {
+        public ServiceConfiguration()
+        {
+            SomeDummyValue = ConfigurationManager.AppSettings["SomeDummyValue"];
+            SomeSafeKey = ConfigurationManager.AppSettings["SomeSafeKey"];
+        }
+
+
+        public string SomeDummyValue { get; set; }
+        public string SomeSafeKey { get; set; }
+    }
+}
+</pre>
+<p>So all that's left is to get the unencrypted values to puit into this helper class. Here is how I do that</p>
+<pre lang="cs">
+namespace Stateless1
+{
+    public class Stateless1 : StatelessService, IDisposable
+    {
+        private readonly ServiceConfiguration _configuration;
+        private ILogger _log;
+
+        public Stateless1(
+            StatelessServiceContext context,
+            ServiceLoggerFactory serviceLoggerFactory,
+            ServiceConfiguration configuration
+        ) : base(context)
+        {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+
+            _configuration = configuration;
+            _log = serviceLoggerFactory.EnrichLoggerForStatelessServiceContext(this);
+
+            EnhanceConfigurationForServiceFabric(context, configuration);
+
+            _log.Information("Stateless1 constructed ok");
+        }
+
+        private void EnhanceConfigurationForServiceFabric(StatelessServiceContext context, ServiceConfiguration configuration)
+        {
+            try
+            {
+                var configPackage = context.CodePackageActivationContext.GetConfigurationPackageObject("Config");
+                var appSettings = configPackage.Settings.Sections["appSettings"];
+                var useServiceFabricEnhancements = bool.Parse(appSettings.Parameters["simpleStatelessServiceFabricDemo:UseServiceFabricEnhancements"].Value);
+                var environmentName = appSettings.Parameters["simpleStatelessServiceFabricDemo:EnvironmentName"].Value;
+
+                if (useServiceFabricEnhancements)
+                {
+                    UpdateEncryptedValue(configPackage, "simpleStatelessServiceFabricDemo:SomeSafeKey", 
+                    	(someSafeKey) =&gt; configuration.SomeSafeKey = someSafeKey);
+                }
+                else
+                {
+                    _log.Information("Stateless1 configuration set-up using default Environment='{EnvironmentName}", environmentName);
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.Error(ex, "Failed to contruct Stateless1");
+                throw;
+            }
+        }
+
+
+        private void UpdateEncryptedValue(ConfigurationPackage configurationPackage, 
+        	string connectString, Action&lt;String&gt; updateServiceConfigurationAction)
+        {
+            var param = configurationPackage.Settings.Sections["encryptedSettings"].Parameters[connectString];
+            updateServiceConfigurationAction(param.IsEncrypted
+                ? param.DecryptValue().ConvertToUnsecureString()
+                : param.Value);
+        }
+    }
+}
+</pre>
 <h3>What About Real Life Cluster?</h3>
 <p>Yes so far we have been talking about testing a local cluster, that is one 
 running locally on your own box. So for a real cluster you will need to get 

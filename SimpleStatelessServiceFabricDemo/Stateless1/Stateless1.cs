@@ -48,7 +48,7 @@ namespace Stateless1
 
                 if (useServiceFabricEnhancements)
                 {
-                    UpdateConnectionString(configPackage, "simpleStatelessServiceFabricDemo:SomeSafeKey", (someSafeKey) => configuration.SomeSafeKey = someSafeKey);
+                    UpdateEncryptedValue(configPackage, "simpleStatelessServiceFabricDemo:SomeSafeKey", (someSafeKey) => configuration.SomeSafeKey = someSafeKey);
                 }
                 else
                 {
@@ -63,7 +63,7 @@ namespace Stateless1
         }
 
 
-        private void UpdateConnectionString(ConfigurationPackage configurationPackage, string connectString, Action<String> updateServiceConfigurationAction)
+        private void UpdateEncryptedValue(ConfigurationPackage configurationPackage, string connectString, Action<String> updateServiceConfigurationAction)
         {
             var param = configurationPackage.Settings.Sections["encryptedSettings"].Parameters[connectString];
             updateServiceConfigurationAction(param.IsEncrypted
